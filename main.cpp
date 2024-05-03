@@ -125,11 +125,19 @@ int main()
 
                             ostringstream ss;
                             ss  << users[sock] << ":" << buf << "\r\n";
+                            int sumk=0;
+                            for (int i=0;i<4096;i++){
+                                sumk+=buf[i];
+                            }
                             string strOut = ss.str();
+                            cout << outSock << ": " << buf  << "len:" <<sumk<<endl;
 
+                            //if (strlen(buf)!=2 && buf!="\r\n") {
+                            if (sumk!=23) {
+                                send(outSock, strOut.c_str(), strOut.size()+1, 0);
 
-                            send(outSock, strOut.c_str(), strOut.size()+1, 0);
-                            cout << outSock << ": " << buf << endl;
+                            }
+
                         }
                     }
 

@@ -6,6 +6,7 @@
 #include <WS2tcpip.h>
 #include <string>
 #include <sstream>
+#include <fstream>
 
 #pragma comment (lib, "ws2_32.lib")
 
@@ -13,6 +14,14 @@ using namespace std;
 
 int main()
 {
+
+    ofstream out;
+    out.open("C:\\rep\\chat\\history.txt");
+    if (out.is_open())
+    {
+        out << "history" << std::endl;
+    }
+
     // Initialze winsock
     WSADATA wsData;
     WORD ver = MAKEWORD(2, 2);
@@ -60,18 +69,25 @@ int main()
                 // принять соединение
                 SOCKET client = accept(listening, nullptr, nullptr);
 
+
                 // add the new connection to the list of connected clients
                 FD_SET(client, &master); // самая важная часть, добавить сокет в листенинг
+                cout <<"!: " <<client <<endl;
+
                 // welcome message
-                string welcomeMsg = "Hello Egor B.";
-                send(client, welcomeMsg.c_str(),welcomeMsg.length()+1,0);
+                string welcomeMsg = "Успешное подключение к серверу.\r\n";
+                send(client, welcomeMsg.c_str(),welcomeMsg.size()+1,0);
             }
             else {
                 char buf[4096];
-                ZeroMemory(buf, sizeof(buf)); //буфер
+                ZeroMemory(buf, 4096); //буфер
 
                 // принять новое смс
                 int bytesIn = recv(sock,buf,4096,0);
+                if (out.is_open()){
+                    out <<sock <<": " << buf;
+                }
+
                 if (bytesIn <= 0){
                     //drop the client
                     closesocket(sock);
@@ -82,9 +98,15 @@ int main()
                     //отправляем смс другим клиентам, проверяем что не на листенинг сокет
                     for (int i=0;i<master.fd_count;i++){
                         SOCKET outSock = master.fd_array[i];
-
                         if (outSock!= listening && outSock!= sock){
-                            send(outSock, buf, bytesIn+1, 0);
+
+                            ostringstream ss;
+                            ss << "SOCKET #" << sock << ":" << buf << "\r\n";
+                            string strOut = ss.str();
+
+
+                            send(outSock, strOut.c_str(), strOut.size()+1, 0);
+                            cout << outSock << ": " << buf << endl;
                         }
                     }
 
@@ -97,15 +119,20 @@ int main()
 
 
     }
+    FD_CLR(listening, &master);
+    closesocket(listening);
 
+    // Cleanup winsock
+    WSACleanup();
+
+    system("pause");
+    out.close();
     // Add our first socket that we're interested in interacting with; the listening socket!
     // It's important that this socket is added for our server or else we won't 'hear' incoming
     // connections
 
 
 
-    // Cleanup winsock
-    WSACleanup();
 
-    system("pause");
+
 }

@@ -21,7 +21,7 @@ int main()
     out.open("C:\\rep\\chat\\history.txt",ofstream::app);
     if (out.is_open())
     {
-        out << "history from " << asctime(localtime(&date)) << std::endl;
+        out << "history from " << asctime(localtime(&date)) << '\n';
     }
 
     // Initialze winsock
@@ -31,7 +31,7 @@ int main()
     int wsOk = WSAStartup(ver, &wsData);
     if (wsOk != 0)
     {
-        cerr << "Can't Initialize winsock! Quitting" << endl;
+        cerr << "Can't Initialize winsock! Quitting" << '\n';
         return 0;
     }
 
@@ -39,7 +39,7 @@ int main()
     SOCKET listening = socket(AF_INET, SOCK_STREAM, 0);
     if (listening == INVALID_SOCKET)
     {
-        cerr << "Can't create a socket! Quitting" << endl;
+        cerr << "Can't create a socket! Quitting" << '\n';
         return 0;
     }
 
@@ -77,7 +77,7 @@ int main()
 
                 // add the new connection to the list of connected clients
                 FD_SET(client, &master); // самая важная часть, добавить сокет в листенинг
-                cout <<"!: " <<client <<endl;
+                cout <<"!: " <<client <<'\n';
 
 
 
@@ -92,15 +92,13 @@ int main()
                 // принять новое смс
                 int bytesIn = recv(sock,buf,4096,0);
                 if (out.is_open()){
-                    out <<sock <<": " << buf<<std::endl;
+                    out <<sock <<": " << buf;
+
                 }
-
-
                 if (bytesIn <= 0){
                     //drop the client
                     closesocket(sock);
                     FD_CLR(sock, &master);
-
                 }
                 else{
                     //команды
@@ -110,35 +108,41 @@ int main()
                         string cmd = string(buf, bytesIn);
                         if (cmd.substr(0,5) == "/name")
                         {
-                          //
                           users[sock] = cmd.substr(6,cmd.length()-6);
                         }
+                        if (cmd.substr(0,7) == "/chname")
+                        {
+                            users[sock] = cmd.substr(8,cmd.length()-8);
+                        }
+
 
                         // Unknown command
                         continue;
                     }
-
                     //отправляем смс другим клиентам, проверяем что не на листенинг сокет
                     for (int i=0;i<master.fd_count;i++){
+
                         SOCKET outSock = master.fd_array[i];
                         if (outSock!= listening && outSock!= sock){
 
                             ostringstream ss;
-                            ss  << users[sock] << ":" << buf << "\r\n";
+                            ss  << users[sock] << ": " << buf << "\r\n";
+
                             int sumk=0;
                             for (int i=0;i<4096;i++){
                                 sumk+=buf[i];
                             }
                             string strOut = ss.str();
-                            cout << outSock << ": " << buf  << "len:" <<sumk<<endl;
+                            cout << outSock << ": " << buf  << "len:" <<sumk<<'\n';
 
-                            //if (strlen(buf)!=2 && buf!="\r\n") {
+//                            if (strlen(buf)!=2 && buf!="\r\n") {
                             if (sumk!=23) {
-                                send(outSock, strOut.c_str(), strOut.size()+1, 0);
-
+                                send(outSock, strOut.c_str(), strOut.size() + 1, 0);
                             }
 
+
                         }
+
                     }
 
                 }
@@ -153,7 +157,7 @@ int main()
     FD_CLR(listening, &master);
     closesocket(listening);
 
-    // Cleanup winsock
+    //Cleanup winsock
     WSACleanup();
 
     system("pause");

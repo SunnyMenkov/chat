@@ -1,0 +1,4 @@
+C:/Users/craft/OneDrive/Документы/GitHub/chat/cmake-build-debug/CMakeFiles/LibsModule.dir
+C:/Users/craft/OneDrive/Документы/GitHub/chat/cmake-build-debug/CMakeFiles/untitled.dir
+C:/Users/craft/OneDrive/Документы/GitHub/chat/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/craft/OneDrive/Документы/GitHub/chat/cmake-build-debug/CMakeFiles/rebuild_cache.dir

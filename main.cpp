@@ -92,7 +92,7 @@ int main()
                 // принять новое смс
                 int bytesIn = recv(sock,buf,4096,0);
                 if (out.is_open()){
-                    out <<sock <<": " << buf;
+                    out <<sock <<": " << buf<<"\r\n";
 
                 }
                 if (bytesIn <= 0){
@@ -110,11 +110,6 @@ int main()
                         {
                           users[sock] = cmd.substr(6,cmd.length()-6);
                         }
-                        if (cmd.substr(0,7) == "/chname")
-                        {
-                            users[sock] = cmd.substr(8,cmd.length()-8);
-                        }
-
 
                         // Unknown command
                         continue;

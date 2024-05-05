@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/craft/OneDrive/Документы/GitHub/chat
+# Install script for directory: C:/Users/craft/CLionProjects/GitProjects
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "C:/Users/craft/OneDrive/Документы/GitHub/chat/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "C:/Users/craft/CLionProjects/GitProjects/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

@@ -8,18 +8,27 @@
 #include <sstream>
 #include <fstream>
 #include <ctime>
-#include <vector>
 
 #pragma comment (lib, "ws2_32.lib")
 
 using namespace std;
-int cnt_users_inf = 0;
-
+int cnt_users_inf = 0, cnt_data_info = 0;
+//Структура всех занятых и не занятых логинов и паролей
+struct all_logins
+        {
+    string login, password;
+        };
+//Структура информации каждого сокета
+struct INFO
+        {
+    string login, password, user_socket;
+    int flag_user_name = 0;
+        };
+INFO users_info[1000];
+all_logins data_inf[1000];
 int main()
 {
     time_t date = time(nullptr);
-    vector<vector<string>> pair;
-    pair.resize(1000, vector<string>(1000));
 
     ofstream out, users_out;
     users_out.open("C:\\Users\\craft\\CLionProjects\\GitProjects\\inf_users.txt",ofstream::app);
@@ -66,7 +75,6 @@ int main()
     FD_ZERO(&master);
     FD_SET(listening, &master);
 
-    string users[999];
     while(true){
 
         fd_set copy = master;
@@ -74,9 +82,22 @@ int main()
         int socketCount = select(0, &copy, nullptr, nullptr, nullptr);
 
         for (int i=0;i<socketCount;i++){
+            int prop = 0;
             SOCKET sock = copy.fd_array[i];
             ostringstream ss;
-            if (users[sock]=="") users[sock] = to_string(sock);
+            for (int l = 0; l < cnt_users_inf; l++)
+            {
+                if (users_info[l].user_socket == to_string(sock))
+                {
+                    prop = 1;
+                    break;
+                }
+            }
+            if (prop == 0)
+            {
+                users_info[cnt_users_inf].user_socket = to_string(sock);
+                cnt_users_inf++;
+            }
             if (sock == listening){
                 // принять соединение
                 SOCKET client = accept(listening, nullptr, nullptr);
@@ -118,6 +139,25 @@ int main()
 //                        {
 //                          users[sock] = cmd.substr(6,cmd.length()-6);
 //                        }
+                        if (cmd.substr(0,8) == "/pr_mesg")
+                        {
+                            int cnt_bfm = 9;
+                            while (cmd[cnt_bfm] !=' ')
+                            {
+                                cnt_bfm++;
+                            }
+                            string user_name = cmd.substr(9, cnt_bfm);
+//                            if (users[sock] == user_name)
+//                            {
+//                                string text_message = cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
+//
+//                            }
+//                            else
+//                            {
+//                                string message = "Пользователя с данным никнеймом не существует не существует.\r\n";
+//                                send(sock, message.c_str(),message.size()+1,0);
+//                            }
+                        }
                         if (cmd.substr(0,8) == "/command")
                         {
                             string message = "\r\nСписок комманд:\r\n"
@@ -128,24 +168,26 @@ int main()
                         }
                         if (cmd.substr(0,9) == "/register")
                         {
+
                             int index_reg = 10, flag_reg = 0;
                             while (cmd[index_reg] != ' ')
                             {
                                 index_reg++;
                             }
                             string login_register = cmd.substr(10, index_reg - 10), password_register = cmd.substr(index_reg+1, cmd.length() - index_reg);
-                            for (int i = 0; i < cnt_users_inf;i++)
+
+                            for (int i = 0; i < cnt_data_info;i++)
                             {
-                                if (login_register == pair[i][0])
-                                {
-                                    flag_reg = 1;
-                                    //ss << "Такой логин уже существует.\r\n";
-                                    string message = "Такой логин уже существует.\r\n";
-                                    send(sock, message.c_str(),message.size()+1,0);
-                                    break;
-                                }
+                                    if (login_register == data_inf[i].login) {
+                                        flag_reg = 1;
+                                        //ss << "Такой логин уже существует.\r\n";
+                                        string message = "Такой логин уже существует.\r\n";
+                                        send(sock, message.c_str(), message.size() + 1, 0);
+                                        break;
+                                    }
                             }
-                            if (flag_reg ==0 ) {
+
+                            if (flag_reg == 0 ) {
                                 while (getline(user_in, from_file)) {
                                     int index_f = 0;
                                     while (from_file[index_f] != ' ') {
@@ -163,11 +205,19 @@ int main()
                                 //This login is free
                                 if (flag_reg == 0)
                                 {
-                                    pair[cnt_users_inf][0] = login_register;
-                                    pair[cnt_users_inf][1] = password_register;
+                                    for (int k = 0; k < cnt_users_inf; k++) {
+                                        cout<<users_info[k].user_socket<<" "<< k <<" "<<to_string(sock)<<" "<< (users_info[k].user_socket == to_string(sock))<<"\n";
+                                        if (users_info[k].user_socket == to_string(sock)) {
+                                            users_info[k].login = login_register;
+                                            users_info[k].password = password_register;
+                                            users_info[k].flag_user_name = 1;
+                                            break;
+                                        }
+                                    }
+                                    data_inf[cnt_data_info].login = login_register;
+                                    data_inf[cnt_data_info].password = password_register;
+                                    cnt_data_info++;
                                     cout<<"password_register = "<<password_register;
-                                    cnt_users_inf++;
-                                    users[sock] = login_register;
                                     string message = "Добро пожаловать, "+ login_register+ ".\r\n";
                                     send(sock, message.c_str(),message.size()+1,0);
                                     users_out << login_register<<" "<<password_register<<"\n";
@@ -187,23 +237,28 @@ int main()
                             //Check now
                             for (int i = 0; i < cnt_users_inf;i++)
                             {
-                                if (user_login == pair[i][0])
-                                {
+                                if (user_login == data_inf[i].login) {
                                     flag_log = 1;
-                                    if (user_password == pair[i][1])
-                                    {
-                                        users[sock] = user_login;
+                                    if (user_password == data_inf[i].password) {
+                                        for (int k = 0; k < cnt_users_inf; k++) {
+                                            if (users_info[k].user_socket == to_string(sock)) {
+                                                users_info[k].login = user_login;
+                                                users_info[k].password = user_password;
+                                                users_info[k].flag_user_name = 1;
+                                                break;
+                                            }
+                                        }
                                         string message = "Успешная авторизация.\r\n";
-                                        send(sock, message.c_str(),message.size()+1,0);
+                                        send(sock, message.c_str(), message.size() + 1, 0);
                                     }
-                                    else
-                                    {
+                                    else {
                                         //ss<<"Неправильно введен пароль.\r\n";
                                         string message = "Неправильно введен пароль.\r\n";
-                                        send(sock, message.c_str(),message.size()+1,0);
+                                        send(sock, message.c_str(), message.size() + 1, 0);
                                     }
                                     break;
                                 }
+
                             }
                             if (flag_log == 0) {
                                 while (getline(user_in, from_file)) {
@@ -217,7 +272,16 @@ int main()
                                     if (user_login_file == user_login) {
                                         flag_log = 1;
                                         if (user_password_file == user_password) {
-                                            users[sock] = user_login_file;
+                                            for (int k = 0; k < cnt_users_inf; k++)
+                                            {
+                                                if (users_info[k].user_socket == to_string(sock))
+                                                {
+                                                    users_info[k].login = user_login;
+                                                    users_info[k].password = user_password;
+                                                    users_info[k].flag_user_name = 1;
+                                                    break;
+                                                }
+                                            }
                                         } else {
                                             //ss << "Неправильно введен логин или пароль.\r\n";
                                             string message = "Неправильно введен логин или пароль.\r\n";
@@ -246,9 +310,18 @@ int main()
 
                         SOCKET outSock = master.fd_array[i];
                         if (outSock!= listening && outSock!= sock){
+                            for (int k = 0; k < cnt_users_inf; k++)
+                            {
+                                if (users_info[k].user_socket == to_string(sock))
+                                {
+                                    if (users_info[k].flag_user_name == 1) ss  << users_info[k].login << ": " << buf << "\r\n";
+                                    else ss  << users_info[k].user_socket << ": " << buf << "\r\n";
+                                    break;
+                                }
+                            }
 
 
-                            ss  << users[sock] << ": " << buf << "\r\n";
+                            //ss  << users[sock] << ": " << buf << "\r\n";
 
                             int sumk=0;
                             for (int i=0;i<4096;i++){

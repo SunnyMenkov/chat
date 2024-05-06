@@ -90,8 +90,7 @@ int main()
 
                 // welcome message
                 string welcomeMsg = "Успешное подключение к серверу.\r\n"
-                                    "Войдите с помощью команды /login <<login>> <<password>>.\r\n"
-                                    "Зарегестрируйтесь с помощью команды /register <<login>> <<password>>.\r\n";
+                                    "Добро пожаловать! Введите /command, чтобы увидеть список доступных команд\r\n";
                 send(client, welcomeMsg.c_str(),welcomeMsg.size()+1,0);
             }
             else {
@@ -119,6 +118,14 @@ int main()
 //                        {
 //                          users[sock] = cmd.substr(6,cmd.length()-6);
 //                        }
+                        if (cmd.substr(0,8) == "/command")
+                        {
+                            string message = "\r\nСписок комманд:\r\n"
+                                             "/login <<login>> <<password>> - для входа в существующий аккаунт пользователя.\r\n"
+                                             "/register <<login>> <<password>> - для регистрации аккаунта в системе.\r\n"
+                                             "\r\n";
+                            send(sock, message.c_str(),message.size()+1,0);
+                        }
                         if (cmd.substr(0,9) == "/register")
                         {
                             int index_reg = 10, flag_reg = 0;

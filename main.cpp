@@ -96,6 +96,7 @@ int main()
             if (prop == 0)
             {
                 users_info[cnt_users_inf].user_socket = to_string(sock);
+                cout<<cnt_users_inf<<"-----"<<users_info[cnt_users_inf].user_socket<<"\n";
                 cnt_users_inf++;
             }
             if (sock == listening){
@@ -141,28 +142,48 @@ int main()
 //                        }
                         if (cmd.substr(0,8) == "/pr_mesg")
                         {
-                            int cnt_bfm = 9;
+                            int cnt_bfm = 9, user_flag = 0;
                             while (cmd[cnt_bfm] !=' ')
                             {
                                 cnt_bfm++;
                             }
-                            string user_name = cmd.substr(9, cnt_bfm);
-//                            if (users[sock] == user_name)
-//                            {
-//                                string text_message = cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
-//
-//                            }
-//                            else
-//                            {
-//                                string message = "Пользователя с данным никнеймом не существует не существует.\r\n";
-//                                send(sock, message.c_str(),message.size()+1,0);
-//                            }
+                            string user_name = cmd.substr(9, cnt_bfm - 9);
+                            cout<<cnt_users_inf<<"\n";
+                            for (int j = 0; j < cnt_users_inf; j++)
+                            {
+                                cout<<users_info[j].user_socket<<" "<<user_name<<" "<<(users_info[j].user_socket == user_name)<<"\n";
+                                if ((users_info[j].login == user_name) || (users_info[j].user_socket == user_name))
+                                {
+                                    user_flag = 1;
+                                    string text_message;
+                                    for (int k = 0; k < cnt_users_inf; k++)
+                                    {
+                                        if (users_info[k].user_socket == to_string(sock))
+                                        {
+                                            if (users_info[k].flag_user_name == 1) text_message = "private from " + users_info[k].login+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
+                                            else text_message = "private from " + users_info[k].user_socket+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
+                                            send(stoi(users_info[j].user_socket), text_message.c_str(), text_message.size()+1, 0);
+                                            break;
+                                        }
+                                    }
+//                                    if (users_info[j].flag_user_name == 1) text_message = "private from " + users_info[j].login+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
+//                                    else text_message = "private from " + users_info[j].user_socket+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
+//                                    send(stoi(users_info[j].user_socket), text_message.c_str(), text_message.size()+1, 0);
+                                    //break;
+                                }
+                            }
+                            if (user_flag == 0)
+                            {
+                                string message = "Пользователя с данным никнеймом не существует не существует.\r\n";
+                                send(sock, message.c_str(),message.size()+1,0);
+                            }
                         }
                         if (cmd.substr(0,8) == "/command")
                         {
                             string message = "\r\nСписок комманд:\r\n"
                                              "/login <<login>> <<password>> - для входа в существующий аккаунт пользователя.\r\n"
                                              "/register <<login>> <<password>> - для регистрации аккаунта в системе.\r\n"
+                                             "/pr_mesg <<login>> <<message>> - личное сообщение пользователю.\r\n"
                                              "\r\n";
                             send(sock, message.c_str(),message.size()+1,0);
                         }

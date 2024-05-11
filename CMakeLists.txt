@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD 23)
 
 ADD_LIBRARY(LibsModule
         main.cpp
+        test.cpp
 )
 
 target_link_libraries(LibsModule -lws2_32)
 
 add_executable(untitled main.cpp)
-
 target_link_libraries(untitled LibsModule)

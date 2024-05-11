@@ -13,6 +13,7 @@
 
 using namespace std;
 int cnt_users_inf = 0, cnt_data_info = 0;
+
 //Структура всех занятых и не занятых логинов и паролей
 struct all_logins
         {
@@ -24,21 +25,30 @@ struct INFO
     string login, password, user_socket;
     int flag_user_name = 0;
         };
+
 INFO users_info[1000];
 all_logins data_inf[1000];
+
 int main()
 {
     time_t date = time(nullptr);
+// чтобы нам с тобой не менять каждый раз путь до файла, я стёр абсолютный путь
+// теперь оно всё сохраняется по дефолту силиона
+// это не папка проекта, а внутренняя папка cmake-build-debug
+//то есть ищи эти файлы там (cmake-build-debug/inf_users.txt) например
+//таким образом нам не придётся каждый раз это менять
 
     ofstream out, users_out;
-    users_out.open("C:\\Users\\craft\\CLionProjects\\GitProjects\\inf_users.txt",ofstream::app);
-    out.open("C:\\Users\\craft\\CLionProjects\\GitProjects\\history.txt",ofstream::app);
-    ifstream user_in("C:\\Users\\craft\\CLionProjects\\GitProjects\\inf_users.txt");
+    users_out.open("inf_users.txt",ofstream::app);
+    out.open("history.txt",ofstream::app);
+    ifstream user_in("inf_users.txt",ifstream::app);
 
     if (out.is_open())
     {
-        out << "history from " << asctime(localtime(&date)) << '\n';
+        cout << "working file"<<endl;
+        out << "history from " << asctime(localtime(&date)) << std::endl;
     }
+
 
     // Initialze winsock
     WSADATA wsData;
@@ -122,7 +132,7 @@ int main()
                 // принять новое смс
                 int bytesIn = recv(sock,buf,4096,0);
                 if (out.is_open()){
-                    out <<sock <<": " << buf<<"\r\n";
+                    out <<sock <<": " << buf<<std::endl;
 
                 }
                 if (bytesIn <= 0){
@@ -241,7 +251,7 @@ int main()
                                     cout<<"password_register = "<<password_register;
                                     string message = "Добро пожаловать, "+ login_register+ ".\r\n";
                                     send(sock, message.c_str(),message.size()+1,0);
-                                    users_out << login_register<<" "<<password_register<<"\n";
+                                    users_out << login_register<<" "<<password_register<<std::endl;
                                 }
                             }
 
@@ -256,7 +266,7 @@ int main()
                             string user_login = cmd.substr(7, index_p - 7), user_password = cmd.substr(index_p+1, cmd.length() - index_p);
                             cout<<user_password;
                             //Check now
-                            for (int i = 0; i < cnt_users_inf;i++)
+                            for (int i = 0; i < cnt_data_info;i++)
                             {
                                 if (user_login == data_inf[i].login) {
                                     flag_log = 1;
@@ -368,16 +378,22 @@ int main()
 
         }
 
-
     }
     FD_CLR(listening, &master);
     closesocket(listening);
 
+
+
     //Cleanup winsock
     WSACleanup();
 
-    system("pause");
+    // закрываем файлики
     out.close();
+    users_out.close();
+    user_in.close();
+
+    system("pause");
+
     // Add our first socket that we're interested in interacting with; the listening socket!
     // It's important that this socket is added for our server or else we won't 'hear' incoming
     // connections

@@ -239,6 +239,7 @@ int main()
                                         break;
                                     }
                                 }
+                                user_in.seekg(0,ios_base::beg);
                                 //This login is free
                                 if (flag_reg == 0)
                                 {
@@ -257,7 +258,7 @@ int main()
                                     cout<<"password_register = "<<password_register;
                                     string message = "Добро пожаловать, "+ login_register+ ".\r\n";
                                     send(sock, message.c_str(),message.size()+1,0);
-                                    users_out << login_register<<" "<<password_register;
+                                    users_out << login_register<<" "<<password_register<<std::endl;
                                     users_out.flush();
                                 }
                             }
@@ -270,13 +271,14 @@ int main()
                             {
                                 index_p++;
                             }
-                            string user_login = cmd.substr(7, index_p - 7), user_password = cmd.substr(index_p+1, cmd.length() - index_p);
-                            cout<<user_password;
+                            string user_login = cmd.substr(7, index_p - 7), user_password = cmd.substr(index_p+1, cmd.length() - index_p - 3);
+                            //cout<<user_password;
                             //Check now
                             for (int i = 0; i < cnt_users_inf;i++)
                             {
                                 if (user_login == data_inf[i].login) {
                                     flag_log = 1;
+                                    cout<<user_password<<" "<<data_inf[i].password;
                                     if (user_password == data_inf[i].password) {
                                         for (int k = 0; k < cnt_users_inf; k++) {
                                             if (users_info[k].user_socket == to_string(sock)) {
@@ -299,14 +301,16 @@ int main()
 
                             }
                             if (flag_log == 0) {
+                                user_in.seekg(0,ios_base::beg);
                                 while (getline(user_in, from_file)) {
+
                                     int index_f = 0;
                                     while (from_file[index_f] != ' ') {
                                         index_f++;
                                     }
                                     string user_login_file = from_file.substr(0,
                                                                               index_f), user_password_file = from_file.substr(
-                                            index_f + 1, from_file.length() - index_f);
+                                            index_f + 1, from_file.length() - index_f - 1);
                                     if (user_login_file == user_login) {
                                         flag_log = 1;
                                         if (user_password_file == user_password) {
@@ -319,8 +323,11 @@ int main()
                                                     users_info[k].flag_user_name = 1;
                                                     break;
                                                 }
+                                                string message = "Успешная авторизация.\r\n";
+                                                send(sock, message.c_str(), message.size() + 1, 0);
                                             }
                                         } else {
+                                            cout<<user_password_file<<"1";
                                             //ss << "Неправильно введен логин или пароль.\r\n";
                                             string message = "Неправильно введен логин или пароль.\r\n";
                                             send(sock, message.c_str(),message.size()+1,0);

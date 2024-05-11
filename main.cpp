@@ -8,6 +8,7 @@
 #include <sstream>
 #include <fstream>
 #include <ctime>
+#include <algorithm>
 
 #pragma comment (lib, "ws2_32.lib")
 
@@ -205,7 +206,12 @@ int main()
                             {
                                 index_reg++;
                             }
-                            string login_register = cmd.substr(10, index_reg - 10), password_register = cmd.substr(index_reg+1, cmd.length() - index_reg);
+                            string login_register = cmd.substr(10, index_reg - 10), password_register = cmd.substr(index_reg+1, cmd.length() - index_reg-3);
+                            cout << "\nlogin len " << login_register.length()<< ": "<< login_register<<endl;
+
+                            //password_register.erase(std::remove_if(password_register.begin(), password_register.end(), [](char c) { return c == '\n'; }), password_register.end());
+
+                            cout << "pass len " << password_register.length() << ": " << password_register<<endl;
 
                             for (int i = 0; i < cnt_data_info;i++)
                             {
@@ -251,7 +257,8 @@ int main()
                                     cout<<"password_register = "<<password_register;
                                     string message = "Добро пожаловать, "+ login_register+ ".\r\n";
                                     send(sock, message.c_str(),message.size()+1,0);
-                                    users_out << login_register<<" "<<password_register<<std::endl;
+                                    users_out << login_register<<" "<<password_register;
+                                    users_out.flush();
                                 }
                             }
 
@@ -266,7 +273,7 @@ int main()
                             string user_login = cmd.substr(7, index_p - 7), user_password = cmd.substr(index_p+1, cmd.length() - index_p);
                             cout<<user_password;
                             //Check now
-                            for (int i = 0; i < cnt_data_info;i++)
+                            for (int i = 0; i < cnt_users_inf;i++)
                             {
                                 if (user_login == data_inf[i].login) {
                                     flag_log = 1;

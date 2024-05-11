@@ -40,15 +40,11 @@ int main()
 //таким образом нам не придётся каждый раз это менять
 
     ofstream out, users_out;
-    users_out.open("inf_users.txt",ofstream::app);
-    out.open("history.txt",ofstream::app);
+    users_out.open("inf_users.txt",ifstream::app);
+    out.open("history.txt",ifstream::app);
+    out << "history from " << asctime(localtime(&date))<<std::endl;
     ifstream user_in("inf_users.txt",ifstream::app);
 
-    if (out.is_open())
-    {
-        cout << "working file"<<endl;
-        out << "history from " << asctime(localtime(&date)) << std::endl;
-    }
 
 
     // Initialze winsock
@@ -88,6 +84,7 @@ int main()
 
     while(true){
 
+
         fd_set copy = master;
 
         int socketCount = select(0, &copy, nullptr, nullptr, nullptr);
@@ -124,7 +121,18 @@ int main()
                 // welcome message
                 string welcomeMsg = "Успешное подключение к серверу.\r\n"
                                     "Добро пожаловать! Введите /command, чтобы увидеть список доступных команд\r\n";
+                string prev_history="";
+                ifstream prev_out("history.txt",ifstream::app);
+
+                string line;
+                while(getline(prev_out, line))
+                {
+                    //std::cout << "line:" << line << std::endl;
+                    prev_history += line+'\n';
+                }
+                send(client, prev_history.c_str(),prev_history.size()+1,0);
                 send(client, welcomeMsg.c_str(),welcomeMsg.size()+1,0);
+
             }
             else {
                 char buf[4096];
@@ -132,8 +140,18 @@ int main()
 
                 // принять новое смс
                 int bytesIn = recv(sock,buf,4096,0);
+
+
                 if (out.is_open()){
-                    out <<sock <<": " << buf<<std::endl;
+                    int sumk=0;
+                    for (int i=0;i<4096;i++){
+                        sumk+=buf[i];
+                    }
+
+                    if (sumk!=23) {
+                        out << sock << ": " << buf;
+                        out.flush();
+                    }
 
                 }
                 if (bytesIn <= 0){

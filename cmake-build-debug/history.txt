@@ -41,3 +41,177 @@
 252: [15~
 
 252: 
+84: ÿûÿû ÿûÿû'ÿýÿûÿý
+88: ÿûÿû ÿûÿû'ÿýÿûÿý
+84: ÿþ
+84: ÿþ ÿþÿþ'ÿü
+88: ÿþÿþ ÿþÿþ'ÿü
+84: ÿû$
+88: ÿû$
+88: ÿþ$
+84: ÿþ$
+88: j
+88: s
+88: j
+88: A
+88: S
+88: A
+88: D
+88: P
+88: P
+88: P
+88: P
+88: P
+88: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: P
+84: H
+84: E
+84: L
+84: L
+84: O
+284: SSH-2.0-PuTTY_Unidentified_Local_Build
+
+292: ÿûÿû ÿûÿû'ÿýÿûÿýÿþÿþ ÿþÿþ'ÿüÿþÿþ ÿþÿþ'ÿüÿû$ÿþ$ÿþ$
+84: ÿþÿþ ÿþÿþ'ÿüÿþ$
+88: ÿþÿþ ÿþÿþ'ÿüÿþ$ÿþÿþ ÿþÿþ'ÿüÿþ$
+292: I
+292: U
+292: U
+292: '
+288: hello my sweet darkness
+
+296: how are you
+
+296: 
+288: 
+84: 
+88: 
+284: 
+280: 
+292: 
+296: hello
+
+296: my sweet darkness
+
+88: how are you?
+296: i am good
+
+304: and you all?
+
+280: hola
+
+192: hi
+
+192: /pr_mesg 280 Ð¿Ñ€Ð¸Ð²ÐµÑ‚Ð¸Ðº
+
+192: [A
+
+280: [A[A/pr_mesg 192 lo lhi
+
+280: 
+192: 
+280: vv
+
+280: /pr_mesg 276 hola private
+
+276: v
+
+276: vv
+
+280: /pr_mesg 276 hey
+
+276: /pr_mesg 280 hola private
+
+284: asdas
+
+140: dsfsd
+
+284: /pr_mesg 140 hello
+
+140: /pr_mesg 284 hi baby
+
+284: /command
+
+292: dasdsa
+
+292: asdasd
+
+284: dasdas
+
+292: /command
+
+292: /cimmand
+
+292: /command
+292: /
+292: /dasd
+
+292: asd
+
+292: asd/
+
+292: /pr_mesg 284 hooooo
+
+296: /login sobaka 222
+
+284: /login baby gleb
+
+284: fasgfki
+
+296: gfdgdf
+
+296: /pr_mesg baby hi my man
+
+284: /pr_mesg sobaka Ð¿Ñ€Ð¸Ð²ÐµÑ‚ Ñ‡Ñ‘Ð¿Ð¿Ð¸Ðº
+
+288: asdjkoasjk
+
+284: dfsdf
+
+248: s
+
+248: dasd
+
+244: dasd
+
+264: kl;sdklsdklsd
+
+248: hety
+
+244: ga
+
+252: awda
+
+248: sdkak
+
+252: sadas\
+
+252: fd
+
+252: sd
+
+252: d
+
+252: s
+
+252: kk
+
+252: bruh
+

@@ -113,7 +113,7 @@ int main()
 
                 // add the new connection to the list of connected clients
                 FD_SET(client, &master); // самая важная часть, добавить сокет в листенинг
-                cout <<"!: " <<client <<'\n';
+                cout <<"Новый сокет подключился!: " <<client <<'\n';
 
 
 
@@ -178,10 +178,10 @@ int main()
                                 cnt_bfm++;
                             }
                             string user_name = cmd.substr(9, cnt_bfm - 9);
-                            cout<<cnt_users_inf<<"\n";
+                            cout<<"Кол-во юзеров: "<<cnt_users_inf<<"\n";
                             for (int j = 0; j < cnt_users_inf; j++)
                             {
-                                cout<<users_info[j].user_socket<<" "<<user_name<<" "<<(users_info[j].user_socket == user_name)<<"\n";
+                                cout<<users_info[j].user_socket<<"отправил приватное смс "<<user_name<<" "<<(users_info[j].user_socket == user_name)<<"\n";
                                 if ((users_info[j].login == user_name) || (users_info[j].user_socket == user_name))
                                 {
                                     user_flag = 1;
@@ -190,8 +190,19 @@ int main()
                                     {
                                         if (users_info[k].user_socket == to_string(sock))
                                         {
+                                            string firstuser,seconduser;
 
-                                            string arr[] = {users_info[k].user_socket,users_info[j].user_socket };
+                                            if (users_info[k].login!="")
+                                                firstuser = users_info[k].login;
+                                            else
+                                                 firstuser = users_info[k].user_socket;
+
+                                            if (users_info[j].login!="")
+                                                 seconduser = users_info[j].login;
+                                            else
+                                                 seconduser = users_info[j].user_socket;
+
+                                            string arr[] = {firstuser,seconduser };
 
 
                                             sort(arr, arr + 2);
@@ -448,8 +459,6 @@ int main()
     FD_CLR(listening, &master);
     closesocket(listening);
 
-
-
     //Cleanup winsock
     WSACleanup();
 
@@ -463,9 +472,5 @@ int main()
     // Add our first socket that we're interested in interacting with; the listening socket!
     // It's important that this socket is added for our server or else we won't 'hear' incoming
     // connections
-
-
-
-
 
 }

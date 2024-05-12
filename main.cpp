@@ -39,12 +39,12 @@ int main()
 //то есть ищи эти файлы там (cmake-build-debug/inf_users.txt) например
 //таким образом нам не придётся каждый раз это менять
 
-    ofstream out, users_out;
-    users_out.open("inf_users.txt",ifstream::app);
-    out.open("history.txt",ifstream::app);
+    ofstream history_out("history.txt",ofstream::app);
+    ofstream users_out("inf_users.txt",ifstream::app);
     ifstream user_in("inf_users.txt",ifstream::app);
 
-
+//напоминаю, что ifstream -- для чтения инпута из файла
+// ofstream -- для записи вывода в файл
 
     // Initialze winsock
     WSADATA wsData;
@@ -131,8 +131,8 @@ int main()
                 }
                 send(client, prev_history.c_str(),prev_history.size()+1,0);
                 send(client, welcomeMsg.c_str(),welcomeMsg.size()+1,0);
-//                out << "\nhistory from " << asctime(localtime(&date));
-//                out.flush();
+//                history_out << "\nhistory from " << asctime(localtime(&date));
+//                history_out.flush();
 
             }
             else {
@@ -143,15 +143,15 @@ int main()
                 int bytesIn = recv(sock,buf,4096,0);
 
 
-                if (out.is_open()){
+                if (history_out.is_open()){
                     int sumk=0;
                     for (int i=0;i<4096;i++){
                         sumk+=buf[i];
                     }
 
-                    if (sumk!=23) {
-                        out << sock << ": " << buf<<std::endl;
-                        out.flush();
+                    if (sumk!=23 && buf[0]!='/') {
+                        history_out << sock << ": " << buf<<std::endl;
+                        history_out.flush();
                     }
 
                 }
@@ -190,9 +190,40 @@ int main()
                                     {
                                         if (users_info[k].user_socket == to_string(sock))
                                         {
-                                            if (users_info[k].flag_user_name == 1) text_message = "private from " + users_info[k].login+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
-                                            else text_message = "private from " + users_info[k].user_socket+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
+
+                                            string arr[] = {users_info[k].user_socket,users_info[j].user_socket };
+
+
+                                            sort(arr, arr + 2);
+
+
+                                            ofstream private_history_out("private_history/"+arr[0]+" "+arr[1]+".txt",ofstream::app);
+                                            ifstream private_history_read("private_history/"+arr[0]+" "+arr[1]+".txt");
+
+                                            if (users_info[k].flag_user_name == 1)
+                                            {text_message =users_info[k].login+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);}
+                                            else{
+                                                text_message = users_info[k].user_socket+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
+                                            }
+                                            private_history_out<<text_message<<std::endl;
+
+
+
+                                            text_message = "private from "+text_message;
+
                                             send(stoi(users_info[j].user_socket), text_message.c_str(), text_message.size()+1, 0);
+
+                                            string line,prev_private_history;
+                                            while(getline(private_history_read, line))
+                                            {
+                                                //std::cout << "line:" << line << std::endl;
+                                                prev_private_history +='\n'+ line;
+                                            }
+
+                                            send(stoi(users_info[k].user_socket), prev_private_history.c_str(),prev_private_history.size()+1,0);
+
+
+
                                             break;
                                         }
                                     }
@@ -202,6 +233,7 @@ int main()
                                     //break;
                                 }
                             }
+
                             if (user_flag == 0)
                             {
                                 string message = "Пользователя с данным никнеймом не существует не существует.\r\n";
@@ -378,7 +410,8 @@ int main()
                             {
                                 if (users_info[k].user_socket == to_string(sock))
                                 {
-                                    if (users_info[k].flag_user_name == 1) ss  << users_info[k].login << ": " << buf << "\r\n";
+                                    if (users_info[k].flag_user_name == 1)
+                                        ss  << users_info[k].login << ": " << buf << "\r\n";
                                     else ss  << users_info[k].user_socket << ": " << buf << "\r\n";
                                     break;
                                 }
@@ -421,7 +454,7 @@ int main()
     WSACleanup();
 
     // закрываем файлики
-    out.close();
+    history_out.close();
     users_out.close();
     user_in.close();
 

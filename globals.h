@@ -8,8 +8,8 @@
 
 extern char text[1024];
 extern fd_set master;
-extern SOCKET listening,sock;
+extern SOCKET listening,sock,GUIsock;
 
-void globals();
+
 
 #endif //CHAT_GLOBALS_H

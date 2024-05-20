@@ -193,7 +193,7 @@ int maingui()
 
                 if (ImGui::Button("Login") && string(login).length()>0 && string(password).length()>0){
                     isLoginSuccess = user_login("", std::string(login), std::string(password));
-
+                    GUIsock = sock;
                 }
                 ImGui::Text(isLoginSuccess.c_str());
 
@@ -243,8 +243,9 @@ int maingui()
                         input.flush();
                     }
 
-
-                    send_message(master, listening, sock, text);
+                    // Интерфейс не будет отправлять сообщения, пока пользователь не войдёт в аккаунт.
+                    // GUIsock присвоит ему свой уникальный сокет.
+                    send_message(master, listening, GUIsock, text);
                   //  std::cout << text  << " message sent from " << sock <<" to "<< listening << std::endl;
                 }
 

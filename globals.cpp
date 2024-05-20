@@ -7,5 +7,6 @@
 
 fd_set master;
 SOCKET sock;
+SOCKET GUIsock;
 SOCKET listening;
 

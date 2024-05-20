@@ -17,9 +17,12 @@ add_executable(chat
         globals.cpp
         server.cpp
         clientgui.cpp
+        client.cpp
 
+        globals.h
         server.h
         clientgui.h
+        client.h
 
 
 )

@@ -12,5 +12,5 @@ using namespace std;
 
 int server();
 void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]);
-string user_login(string cmd, string login, string password);
+string user_login(string cmd, string login, string password,SOCKET sock);
 #endif //CHAT_SERVER_H

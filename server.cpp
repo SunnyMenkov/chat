@@ -32,7 +32,7 @@ INFO users_info[1000];
 all_logins data_inf[1000];
 ostringstream ss;
 
-string user_login(string cmd, string user_login, string user_password){
+string user_login(string cmd, string user_login, string user_password, SOCKET sock){
         string message;
         ifstream user_in("inf_users.txt",ifstream::app);
         string from_file;
@@ -118,7 +118,6 @@ string user_login(string cmd, string user_login, string user_password){
         }
 
         return message;
-
 }
 
 
@@ -465,7 +464,7 @@ int server()
 
                         }
 
-                        if (cmd.substr(0,6) == "/login") user_login(cmd,"","");
+                        if (cmd.substr(0,6) == "/login") user_login(cmd,"","",sock);
 
                         // Unknown command
                         continue;

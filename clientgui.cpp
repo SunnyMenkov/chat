@@ -192,8 +192,8 @@ int maingui()
                 ImGui::InputTextWithHint("password", "<password>", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
 
                 if (ImGui::Button("Login") && string(login).length()>0 && string(password).length()>0){
-                    isLoginSuccess = user_login("", std::string(login), std::string(password));
-                    GUIsock = sock;
+                    isLoginSuccess = user_login("", std::string(login), std::string(password),GUIsock);
+                  //  GUIsock = sock;
                 }
                 ImGui::Text(isLoginSuccess.c_str());
 

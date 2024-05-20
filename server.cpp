@@ -32,7 +32,101 @@ INFO users_info[1000];
 all_logins data_inf[1000];
 ostringstream ss;
 
+string user_login(string cmd, string user_login, string user_password){
+        string message;
+        ifstream user_in("inf_users.txt",ifstream::app);
+        string from_file;
+        int index_p = 7, flag_log = 0;
+        while (cmd[index_p] != ' ')
+        {
+            index_p++;
+        }
+        if (user_password=="" || user_login=="") {
+            string user_login = cmd.substr(7, index_p - 7);
+            string user_password = cmd.substr(index_p + 1, cmd.length() - index_p - 3);
+        }
+
+        //cout<<user_password;
+        //Check now
+        for (int i = 0; i < cnt_users_inf;i++)
+        {
+            if (user_login == data_inf[i].login) {
+                flag_log = 1;
+                cout<<user_password<<" "<<data_inf[i].password;
+                if (user_password == data_inf[i].password) {
+                    for (int k = 0; k < cnt_users_inf; k++) {
+                        if (users_info[k].user_socket == to_string(sock)) {
+                            users_info[k].login = user_login;
+                            users_info[k].password = user_password;
+                            users_info[k].flag_user_name = 1;
+                            break;
+                        }
+                    }
+                    message = "Успешная авторизация.\r\n";
+                    send(sock, message.c_str(), message.size() + 1, 0);
+                }
+                else {
+                    //ss<<"Неправильно введен пароль.\r\n";
+                    message = "Неправильно введен пароль.\r\n";
+                    send(sock, message.c_str(), message.size() + 1, 0);
+                }
+                break;
+            }
+
+        }
+        if (flag_log == 0) {
+            user_in.seekg(0,ios_base::beg);
+            while (getline(user_in, from_file)) {
+
+                int index_f = 0;
+                while (from_file[index_f] != ' ') {
+                    index_f++;
+                }
+                string user_login_file = from_file.substr(0,
+                                                          index_f), user_password_file = from_file.substr(
+                        index_f + 1, from_file.length() - index_f - 1);
+                if (user_login_file == user_login) {
+                    flag_log = 1;
+                    if (user_password_file == user_password) {
+                        for (int k = 0; k < cnt_users_inf; k++)
+                        {
+                            if (users_info[k].user_socket == to_string(sock))
+                            {
+                                users_info[k].login = user_login;
+                                users_info[k].password = user_password;
+                                users_info[k].flag_user_name = 1;
+                                break;
+                            }
+                            message = "Успешная авторизация.\r\n";
+                            send(sock, message.c_str(), message.size() + 1, 0);
+                        }
+                    } else {
+                        cout<<user_password_file<<"1";
+                        //ss << "Неправильно введен логин или пароль.\r\n";
+                        message = "Неправильно введен логин или пароль.\r\n";
+                        send(sock, message.c_str(),message.size()+1,0);
+                    }
+                    break;
+                }
+            }
+            if (flag_log == 0)
+            {
+                //ss<<"Такого логина не существует. \r\n";
+                message = "Такого логина не существует.\r\n";
+                send(sock, message.c_str(),message.size()+1,0);
+            }
+        }
+
+        return message;
+
+}
+
+
 void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]){
+    time_t now = time(0);
+    char* time = asctime(localtime(&now));
+    time[strlen(time) - 1] = '\0';
+
 
     for (int i=0;i<master.fd_count;i++){
 
@@ -56,17 +150,17 @@ void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]){
             }
 
             string strOut = ss.str();
-            cout << outSock << ": " << buf  << "len:" <<sumk<<'\n';
+
 //                            if (strlen(buf)!=2 && buf!="\r\n") {
             if (sumk!=23) {
+         //   cout << sumk <<"= sum" <<endl;
+                cout << time << " message from " << outSock << ": " << buf<<std::endl;
                 send(outSock, strOut.c_str(), strOut.size() + 1, 0);
-            }
+           }
 
         }
 
     }
-    std::cout << sock << std::endl;
-    std::cout << listening << std::endl;
 
 }
 
@@ -74,16 +168,17 @@ void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]){
 
 int server()
 {
-    time_t date = time(nullptr);
+
 // чтобы нам с тобой не менять каждый раз путь до файла, я стёр абсолютный путь
 // теперь оно всё сохраняется по дефолту силиона
 // это не папка проекта, а внутренняя папка cmake-build-debug
 //то есть ищи эти файлы там (cmake-build-debug/inf_users.txt) например
 //таким образом нам не придётся каждый раз это менять
 
+    ifstream user_in("inf_users.txt",ifstream::app);
     ofstream history_out("history.txt",ofstream::app);
     ofstream users_out("inf_users.txt",ifstream::app);
-    ifstream user_in("inf_users.txt",ifstream::app);
+
 
 //напоминаю, что ifstream -- для чтения инпута из файла
 // ofstream -- для записи вывода в файл
@@ -369,88 +464,8 @@ int server()
                             }
 
                         }
-                        if (cmd.substr(0,6) == "/login")
-                        {
-                            int index_p = 7, flag_log = 0;
-                            while (cmd[index_p] != ' ')
-                            {
-                                index_p++;
-                            }
-                            string user_login = cmd.substr(7, index_p - 7), user_password = cmd.substr(index_p+1, cmd.length() - index_p - 3);
-                            //cout<<user_password;
-                            //Check now
-                            for (int i = 0; i < cnt_users_inf;i++)
-                            {
-                                if (user_login == data_inf[i].login) {
-                                    flag_log = 1;
-                                    cout<<user_password<<" "<<data_inf[i].password;
-                                    if (user_password == data_inf[i].password) {
-                                        for (int k = 0; k < cnt_users_inf; k++) {
-                                            if (users_info[k].user_socket == to_string(sock)) {
-                                                users_info[k].login = user_login;
-                                                users_info[k].password = user_password;
-                                                users_info[k].flag_user_name = 1;
-                                                break;
-                                            }
-                                        }
-                                        string message = "Успешная авторизация.\r\n";
-                                        send(sock, message.c_str(), message.size() + 1, 0);
-                                    }
-                                    else {
-                                        //ss<<"Неправильно введен пароль.\r\n";
-                                        string message = "Неправильно введен пароль.\r\n";
-                                        send(sock, message.c_str(), message.size() + 1, 0);
-                                    }
-                                    break;
-                                }
 
-                            }
-                            if (flag_log == 0) {
-                                user_in.seekg(0,ios_base::beg);
-                                while (getline(user_in, from_file)) {
-
-                                    int index_f = 0;
-                                    while (from_file[index_f] != ' ') {
-                                        index_f++;
-                                    }
-                                    string user_login_file = from_file.substr(0,
-                                                                              index_f), user_password_file = from_file.substr(
-                                            index_f + 1, from_file.length() - index_f - 1);
-                                    if (user_login_file == user_login) {
-                                        flag_log = 1;
-                                        if (user_password_file == user_password) {
-                                            for (int k = 0; k < cnt_users_inf; k++)
-                                            {
-                                                if (users_info[k].user_socket == to_string(sock))
-                                                {
-                                                    users_info[k].login = user_login;
-                                                    users_info[k].password = user_password;
-                                                    users_info[k].flag_user_name = 1;
-                                                    break;
-                                                }
-                                                string message = "Успешная авторизация.\r\n";
-                                                send(sock, message.c_str(), message.size() + 1, 0);
-                                            }
-                                        } else {
-                                            cout<<user_password_file<<"1";
-                                            //ss << "Неправильно введен логин или пароль.\r\n";
-                                            string message = "Неправильно введен логин или пароль.\r\n";
-                                            send(sock, message.c_str(),message.size()+1,0);
-                                        }
-                                        break;
-                                    }
-                                }
-                                if (flag_log == 0)
-                                {
-                                    //ss<<"Такого логина не существует. \r\n";
-                                    string message = "Такого логина не существует.\r\n";
-                                    send(sock, message.c_str(),message.size()+1,0);
-                                }
-                            }
-                            //Check in history
-
-
-                        }
+                        if (cmd.substr(0,6) == "/login") user_login(cmd,"","");
 
                         // Unknown command
                         continue;

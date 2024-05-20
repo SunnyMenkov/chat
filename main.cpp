@@ -9,24 +9,13 @@
 using namespace std;
 
 int main(){
-    //globals();
-    //maingui();
+
     thread t2(maingui);
     thread t1(server);
 
-
-    cout<<"asDFPOASDFL;SDFLPSDL;F";
-    cout<<sock;
+    cout<<"Multithreading started";
 
     t2.join();
 
-
-
-//    char buf[4096];
-//    strcpy(buf,text);
-
-
-    if (ImGui::Button("Button")) {cout << "sent!"; }
-
-            return 0;
+    return 0;
 }

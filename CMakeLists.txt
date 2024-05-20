@@ -12,16 +12,15 @@ add_executable(chat
         imgui/imgui.cpp
         imgui/backends/imgui_impl_win32.cpp
         imgui/backends/imgui_impl_dx11.cpp
- 
+
         main.cpp
         globals.cpp
         server.cpp
         clientgui.cpp
-        # original.cpp
 
         server.h
         clientgui.h
-        # original.h
+
 
 )
 find_package(OpenGL REQUIRED)

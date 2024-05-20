@@ -41,13 +41,12 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 int maingui()
 {
     SetConsoleOutputCP(CP_UTF8);
-    std::cout << "Я РУССКИЙ";
 
     // Create application window
     //ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"ImGui Chat made by amenkov & s1ntenkov for HSE", WS_OVERLAPPEDWINDOW, 100, 100, 1200, 1200, nullptr, nullptr, wc.hInstance, nullptr);
+    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"ImGui Chat", WS_OVERLAPPEDWINDOW, 100, 100, 1200, 1200, nullptr, nullptr, wc.hInstance, nullptr);
 
     // Initialize Direct3D
     if (!CreateDeviceD3D(hwnd))
@@ -72,8 +71,8 @@ int maingui()
 
 
     // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
+    //ImGui::StyleColorsDark();
+    ImGui::StyleColorsLight();
 
     // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(hwnd);
@@ -105,6 +104,8 @@ int maingui()
 
     // Main loop
     bool done = false;
+
+    std::string isLoginSuccess="";
     while (!done)
     {
         // Poll and handle messages (inputs, window resize, etc.)
@@ -166,8 +167,6 @@ int maingui()
             ImGui::End();
             ImGui::PopFont();
 
-
-
         }
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
@@ -183,6 +182,25 @@ int maingui()
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
             //ImGui::Checkbox("Another Window", &show_another_window);
 
+
+            if (ImGui::TreeNode("Password Input"))
+            {
+                static char password[64] = "";
+                static char login[64] = "";
+
+                ImGui::InputTextWithHint("login", "<login>",  login, IM_ARRAYSIZE(login));
+                ImGui::InputTextWithHint("password", "<password>", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
+
+                if (ImGui::Button("Login") && string(login).length()>0 && string(password).length()>0){
+                    isLoginSuccess = user_login("", std::string(login), std::string(password));
+
+                }
+                ImGui::Text(isLoginSuccess.c_str());
+
+
+                ImGui::TreePop();
+
+            }
 
 
 
@@ -227,12 +245,7 @@ int maingui()
 
 
                     send_message(master, listening, sock, text);
-                    std::cout << text << " ! ";
-                    std::cout << "message sent" << std::endl;
-                    std::cout << sock << std::endl;
-                    std::cout << listening << std::endl;
-                    // std::cout << master << std::endl;
-
+                  //  std::cout << text  << " message sent from " << sock <<" to "<< listening << std::endl;
                 }
 
 

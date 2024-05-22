@@ -141,7 +141,29 @@ int maingui()
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
 
+
+//        static bool _scrollToBottom = false;
+//        static ImGuiTextBuffer _textBuffer;
+//        static int _number = 0;
+//
+//        ImGui::Begin("Test control", nullptr, ImGuiWindowFlags_NoSavedSettings);
+//        if (ImGui::Button("Add line")) {
+//            _textBuffer.appendf("Number: %d\n", ++_number);
+//            _scrollToBottom = true;
+//        }
+//        ImGui::End();
+//
+//        ImGui::Begin("Test", nullptr, ImGuiWindowFlags_NoSavedSettings);
+//        ImGui::TextUnformatted(_textBuffer.begin());
+//        ImGui::SetScrollHereY(1.0f);
+//        if (_scrollToBottom) {
+//            ImGui::SetScrollHereY(1.0f);
+//            _scrollToBottom = false;
+//        }
+//        ImGui::End();
+        static bool _scrollToBottom = false;
         {
+
 
             static float f = 0.0f;
             static int counter = 0;
@@ -162,8 +184,15 @@ int maingui()
                 //std::cout << "line:" << line << std::endl;
                 if (line!="\r\n"  && line.length()>0)
                 prev_history +='\n'+ line;
+
             }
             ImGui::Text(prev_history.c_str());
+            if (_scrollToBottom) {
+                ImGui::SetScrollHereY(1.0f);
+                _scrollToBottom = false;
+            }
+
+
             ImGui::End();
             ImGui::PopFont();
 
@@ -171,6 +200,7 @@ int maingui()
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
+
             static float f = 0.0f;
             static int counter = 0;
 
@@ -245,7 +275,8 @@ int maingui()
 
                     // Интерфейс не будет отправлять сообщения, пока пользователь не войдёт в аккаунт.
                     // GUIsock присвоит ему свой уникальный сокет.
-                    send_message(master, listening, GUIsock, text);
+                    send_message(master, listening, master.fd_array[1], text);
+                    _scrollToBottom = true;
                   //  std::cout << text  << " message sent from " << sock <<" to "<< listening << std::endl;
                 }
 

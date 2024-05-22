@@ -63,12 +63,12 @@ string user_login(string cmd, string user_login, string user_password, SOCKET so
                         }
                     }
                     message = "Успешная авторизация.\r\n";
-                    send(sock, message.c_str(), message.size() + 1, 0);
+//                    send(sock, message.c_str(), message.size() + 1, 0);
                 }
                 else {
                     //ss<<"Неправильно введен пароль.\r\n";
                     message = "Неправильно введен пароль.\r\n";
-                    send(sock, message.c_str(), message.size() + 1, 0);
+                   // send(sock, message.c_str(), message.size() + 1, 0);
                 }
                 break;
             }
@@ -98,22 +98,22 @@ string user_login(string cmd, string user_login, string user_password, SOCKET so
                                 break;
                             }
                             message = "Успешная авторизация.\r\n";
-                            send(sock, message.c_str(), message.size() + 1, 0);
+                            //send(sock, message.c_str(), message.size() + 1, 0);
                         }
                     } else {
                         cout<<user_password_file<<"1";
                         //ss << "Неправильно введен логин или пароль.\r\n";
                         message = "Неправильно введен логин или пароль.\r\n";
-                        send(sock, message.c_str(),message.size()+1,0);
+                        //send(sock, message.c_str(),message.size()+1,0);
                     }
                     break;
                 }
             }
             if (flag_log == 0)
             {
-                //ss<<"Такого логина не существует. \r\n";
+
                 message = "Такого логина не существует.\r\n";
-                send(sock, message.c_str(),message.size()+1,0);
+               // send(sock, message.c_str(),message.size()+1,0);
             }
         }
 
@@ -125,6 +125,12 @@ void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]){
     time_t now = time(0);
     char* time = asctime(localtime(&now));
     time[strlen(time) - 1] = '\0';
+
+
+    ofstream history("history.txt",ofstream::app);
+
+
+
 
 
     for (int i=0;i<master.fd_count;i++){
@@ -155,6 +161,15 @@ void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]){
          //   cout << sumk <<"= sum" <<endl;
                 cout << time << " message from " << outSock << ": " << buf<<std::endl;
                 send(outSock, strOut.c_str(), strOut.size() + 1, 0);
+
+                if (history.is_open()){
+                    if (buf[0]!='/') {
+                        history << sock << ": " << buf<<std::endl;
+                        history.flush();
+                    }
+
+                }
+
            }
 
         }
@@ -384,7 +399,7 @@ int server()
 
                             if (user_flag == 0)
                             {
-                                string message = "Пользователя с данным никнеймом не существует не существует.\r\n";
+                                string message = "Пользователя с данным никнеймом не существует.\r\n";
                                 send(sock, message.c_str(),message.size()+1,0);
                             }
                         }

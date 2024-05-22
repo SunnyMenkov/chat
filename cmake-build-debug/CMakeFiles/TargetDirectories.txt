@@ -1,4 +1,3 @@
-C:/Users/craft/CLionProjects/GitProjects/cmake-build-debug/CMakeFiles/LibsModule.dir
-C:/Users/craft/CLionProjects/GitProjects/cmake-build-debug/CMakeFiles/untitled.dir
-C:/Users/craft/CLionProjects/GitProjects/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/craft/CLionProjects/GitProjects/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/Users/Alexander/Documents/GitHub/chat/cmake-build-debug/CMakeFiles/chat.dir
+C:/Users/Alexander/Documents/GitHub/chat/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Alexander/Documents/GitHub/chat/cmake-build-debug/CMakeFiles/rebuild_cache.dir

@@ -25,8 +25,8 @@ int client()
     // Create socket
 //    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
 
-    GUIsock = socket(AF_INET, SOCK_STREAM, 0);
-    if (GUIsock == INVALID_SOCKET)
+    SOCKET testsocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (testsocket == INVALID_SOCKET)
     {
         cerr << "Can't create socket, Err #" << WSAGetLastError() << endl;
         WSACleanup();
@@ -39,14 +39,14 @@ int client()
     hint.sin_port = htons(port);
     inet_pton(AF_INET, ipAddress.c_str(), &hint.sin_addr);
 
-    //FD_SET(GUIsock, &master); // самая важная часть, добавить сокет в листенинг
+    //FD_SET(testsocket, &master); // самая важная часть, добавить сокет в листенинг
 
     // Connect to server
-    int connResult = connect(GUIsock, (sockaddr*)&hint, sizeof(hint));
+    int connResult = connect(testsocket, (sockaddr*)&hint, sizeof(hint));
     if (connResult == SOCKET_ERROR)
     {
         cerr << "Can't connect to server, Err #" << WSAGetLastError() << endl;
-        closesocket(GUIsock);
+        closesocket(testsocket);
         WSACleanup();
         return 0;
     }

@@ -13,10 +13,10 @@ int main(){
 
     thread t2(maingui);
     thread t1(server);
-    thread t3(client);
+   client();
+    client();
+//    thread t7 (client);
 
-    thread t4(client);
-//    thread t6(client);
 
 
 

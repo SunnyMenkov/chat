@@ -16,12 +16,10 @@
 #include <fstream>
 #include "globals.h"
 #include <windows.h>
+#include "server.h"
 
-
-//#include "ch.h"
-//#include "main.h"
-//#include "original.h"
-//#include <thread>
+INFO users_info[1000];
+all_logins data_inf[1000];
 
 // Data
 static ID3D11Device*            g_pd3dDevice = nullptr;
@@ -106,6 +104,20 @@ int maingui()
     bool done = false;
 
     std::string isLoginSuccess="";
+    std::string isLoginSuccess2="";
+
+    std::ifstream prev_out("history.txt", std::ifstream::app);
+    std::string line;
+    std::string prev_history="";
+
+    while(getline(prev_out, line))
+    {
+        //std::cout << "line:" << line << std::endl;
+        if (line!="\r\n"  && line.length()>0)
+            prev_history +='\n'+ line;
+    }
+
+
     while (!done)
     {
         // Poll and handle messages (inputs, window resize, etc.)
@@ -162,8 +174,9 @@ int maingui()
 //        }
 //        ImGui::End();
         static bool _scrollToBottom = false;
-        {
 
+
+        {
 
             static float f = 0.0f;
             static int counter = 0;
@@ -175,18 +188,20 @@ int maingui()
             ImGui::Text("История");               // Display some text (you can use a format strings too)
 
 
-            std::string prev_history="";
-            std::ifstream prev_out("history.txt", std::ifstream::app);
 
+            std::ifstream prev_out("history.txt", std::ifstream::app);
             std::string line;
+            string new_history;
+
             while(getline(prev_out, line))
             {
                 //std::cout << "line:" << line << std::endl;
                 if (line!="\r\n"  && line.length()>0)
-                prev_history +='\n'+ line;
-
+                    new_history +='\n'+ line;
             }
-            ImGui::Text(prev_history.c_str());
+            if (new_history!= prev_history) {_scrollToBottom = true; prev_history=new_history;}
+
+            ImGui::Text(new_history.c_str());
             if (_scrollToBottom) {
                 ImGui::SetScrollHereY(1.0f);
                 _scrollToBottom = false;
@@ -198,21 +213,89 @@ int maingui()
 
         }
 
+
+        {
+            static float f = 0.0f;
+            ImGui::PushFont(font2);
+            ImGui::Begin("Users", nullptr,
+                         ImGuiWindowFlags_NoResize);                          // Create a window called "Hello, world!" and append into it.
+            ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0, 1.0f),
+                               "Choose user to send private message:");           // Display some text (you can use a format strings too)
+            static bool selection[100] = {false, false, false, false, false};
+
+            for (int i = 0; i < master.fd_count; i++) {
+                string selectable = to_string(master.fd_array[i]) + " " + users_info[i].login;
+
+                if (i==0) selectable+=" server";
+                else if (GUIsock==0) GUIsock=master.fd_array[i];
+                else if (GUIsock2==0 && master.fd_array[i]!=GUIsock) GUIsock2=master.fd_array[i];
+
+     //cout << GUIsock2 << " guiscokets "  << GUIsock<<endl;
+                ImGui::Selectable(selectable.c_str(), &selection[i], ImGuiSelectableFlags_AllowDoubleClick);
+                if (selectable[i] == 1) {
+//                    _isMainHistory = false;
+//                    index = i;
+                }
+
+            }
+
+            ImGui::End();
+            ImGui::PopFont();
+        }
+
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
-
             static float f = 0.0f;
             static int counter = 0;
-
-
             ImGui::PushFont(font2);
-            ImGui::Begin("Send message");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("User1");
+            if (ImGui::TreeNode("Password Input")) {
+                static char password[64] = "";
+                static char login[64] = "";
+
+                ImGui::InputTextWithHint("login", "<login>", login, IM_ARRAYSIZE(login));
+                ImGui::InputTextWithHint("password", "<password>", password, IM_ARRAYSIZE(password),
+                                         ImGuiInputTextFlags_Password);
+
+                if (ImGui::Button("Login") && string(login).length() > 0 && string(password).length() > 0) {
+                    isLoginSuccess = user_login("", std::string(login), std::string(password), master.fd_array[1]);
 
 
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            //ImGui::Checkbox("Another Window", &show_another_window);
+                    if (isLoginSuccess == "Успешная авторизация.\r\n") {
+                        users_info[1].user_socket = to_string(master.fd_array[1]);
+                        users_info[1].flag_user_name = 1;
+                        users_info[1].login = std::string(login);
+                        users_info[1].password = std::string(password);
+                    }
 
+                    //  GUIsock = sock;
+                    for (int i = 0; i < master.fd_count; i++) {
+                        cout << users_info[i].login << " ? " << users_info[i].user_socket << endl;
+                    }
+                }
+                ImGui::Text(isLoginSuccess.c_str());
+                ImGui::TreePop();
+            }
 
+            static char text[1024] = "";
+               std::string nullthetext = "";
+             strcpy(text, nullthetext.c_str());
+
+            ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CtrlEnterForNewLine;
+            ImGui::Text("Chat");
+            if (ImGui::InputText("##send", text, IM_ARRAYSIZE(text), ImGuiInputTextFlags_EnterReturnsTrue)) {
+                users_info[1].user_socket = to_string(master.fd_array[1]);
+                send_message(master, listening, master.fd_array[1], text);
+                _scrollToBottom = true;
+            }
+            ImGui::End();
+            ImGui::PopFont();
+        }
+
+        {
+            static float f = 0.0f;
+            ImGui::PushFont(font2);
+            ImGui::Begin("User2");
             if (ImGui::TreeNode("Password Input"))
             {
                 static char password[64] = "";
@@ -222,88 +305,42 @@ int maingui()
                 ImGui::InputTextWithHint("password", "<password>", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_Password);
 
                 if (ImGui::Button("Login") && string(login).length()>0 && string(password).length()>0){
-                    isLoginSuccess = user_login("", std::string(login), std::string(password),GUIsock);
-                  //  GUIsock = sock;
+                    isLoginSuccess2 = user_login("", std::string(login), std::string(password),master.fd_array[2]);
+
+
+                    if (isLoginSuccess2 == "Успешная авторизация.\r\n") {
+                        users_info[2].user_socket = to_string(master.fd_array[2]);
+                        users_info[2].flag_user_name = 1;
+                        users_info[2].login = std::string(login);
+                        users_info[2].password = std::string(password);
+                    }
+                    //  GUIsock2 = sock;
+                    for (int i=0;i<master.fd_count;i++){
+                        cout << users_info[i].login << " ? " << users_info[i].user_socket<<endl;
+                    }
                 }
-                ImGui::Text(isLoginSuccess.c_str());
-
-
+                ImGui::Text(isLoginSuccess2.c_str());
                 ImGui::TreePop();
 
             }
+            static char text2[1024] = "";
+            std::string nullthetext = "";
+
+            strcpy(text2, nullthetext.c_str());
 
 
 
-                // Note: we are using a fixed-sized buffer for simplicity here. See ImGuiInputTextFlags_CallbackResize
-                // and the code in misc/cpp/imgui_stdlib.h for how to setup InputText() for dynamically resizing strings.
 
-                //static ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput;
-                //HelpMarker("You can use the ImGuiInputTextFlags_CallbackResize facility if you need to wire InputTextMultiline() to a dynamic string type. See misc/cpp/imgui_stdlib.h for an example. (This is not demonstrated in imgui_demo.cpp because we don't want to include <string> in here)");
-//                ImGui::CheckboxFlags("ImGuiInputTextFlags_ReadOnly", &flags, ImGuiInputTextFlags_ReadOnly);
-//                ImGui::CheckboxFlags("ImGuiInputTextFlags_AllowTabInput", &flags, ImGuiInputTextFlags_AllowTabInput);
-                // ImGui::SameLine(); //HelpMarker("When _AllowTabInput is set, passing through the widget with Tabbing doesn't automatically activate it, in order to also cycling through subsequent widgets.");
-//                ImGui::CheckboxFlags("ImGuiInputTextFlags_CtrlEnterForNewLine", &flags,
-//                                     ImGuiInputTextFlags_CtrlEnterForNewLine);
-                std::string testik = "";
-
-
-                std::ofstream input("test.txt"); //std::ofstream::app
-
-
-                static char text[1024] = "";
-                strcpy(text, testik.c_str());
-                static char text_new[1024];
-                strcpy(text_new, text);
-                ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CtrlEnterForNewLine;
-
-
-
-                ImGui::Text("Chat");
-
-
-
-                if (ImGui::InputText("##send", text, IM_ARRAYSIZE(text), ImGuiInputTextFlags_EnterReturnsTrue)) {
-//              ImGui::InputTextMultiline("##source", text, IM_ARRAYSIZE(text),
-//                                         ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 16));
-
-
-                    if (text_new != text) {
-                        // std::cout << text;
-                        input << text;
-                        input.flush();
-                    }
-
-                    // Интерфейс не будет отправлять сообщения, пока пользователь не войдёт в аккаунт.
-                    // GUIsock присвоит ему свой уникальный сокет.
-                    send_message(master, listening, master.fd_array[1], text);
-                    _scrollToBottom = true;
-                  //  std::cout << text  << " message sent from " << sock <<" to "<< listening << std::endl;
-                }
-
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CtrlEnterForNewLine;
+            ImGui::Text("Chat");
+            if (ImGui::InputText("##send", text2, IM_ARRAYSIZE(text2), ImGuiInputTextFlags_EnterReturnsTrue)  && (string(text2).length()>0)) {
+                users_info[2].user_socket = to_string(master.fd_array[2]);
+                send_message(master, listening, master.fd_array[2], text2);
+                _scrollToBottom = true;
+            }
             ImGui::End();
             ImGui::PopFont();
         }
-
-
-//        // 3. Show another simple window.
-//        if (show_another_window)
-//        {
-//            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-//            ImGui::Text("Hello from another window!");
-//            if (ImGui::Button("Close Me"))
-//                show_another_window = false;
-//            ImGui::End();
-//        }
 
         // Rendering
         ImGui::Render();

@@ -10,27 +10,20 @@
 #include <ctime>
 #include <algorithm>
 #include "globals.h"
+#include "server.h"
 
 #pragma comment (lib, "ws2_32.lib")
 
 using namespace std;
-int cnt_users_inf = 0, cnt_data_info = 0;
+
 
 //Структура всех занятых и не занятых логинов и паролей
-struct all_logins
-{
-    string login, password;
-};
-//Структура информации каждого сокета
-struct INFO
-{
-    string login, password, user_socket;
-    int flag_user_name = 0;
-};
 
-INFO users_info[1000];
-all_logins data_inf[1000];
-ostringstream ss;
+extern INFO users_info[1000];
+extern all_logins data_inf[1000];
+
+
+
 
 string user_login(string cmd, string user_login, string user_password, SOCKET sock){
         string message;
@@ -41,9 +34,9 @@ string user_login(string cmd, string user_login, string user_password, SOCKET so
         {
             index_p++;
         }
-        if (user_password=="" || user_login=="") {
-            string user_login = cmd.substr(7, index_p - 7);
-            string user_password = cmd.substr(index_p + 1, cmd.length() - index_p - 3);
+        if (user_password=="" && user_login=="") {
+             user_login = cmd.substr(7, index_p - 7);
+             user_password = cmd.substr(index_p + 1, cmd.length() - index_p - 3);
         }
 
         //cout<<user_password;
@@ -63,12 +56,12 @@ string user_login(string cmd, string user_login, string user_password, SOCKET so
                         }
                     }
                     message = "Успешная авторизация.\r\n";
-//                    send(sock, message.c_str(), message.size() + 1, 0);
+                    send(sock, message.c_str(), message.size() + 1, 0);
                 }
                 else {
                     //ss<<"Неправильно введен пароль.\r\n";
                     message = "Неправильно введен пароль.\r\n";
-                   // send(sock, message.c_str(), message.size() + 1, 0);
+                    send(sock, message.c_str(), message.size() + 1, 0);
                 }
                 break;
             }
@@ -122,28 +115,33 @@ string user_login(string cmd, string user_login, string user_password, SOCKET so
 
 
 void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]){
+    string sendtofile;
+    string flag ="" ;
+    int f = 0;
     time_t now = time(0);
     char* time = asctime(localtime(&now));
     time[strlen(time) - 1] = '\0';
 
-
     ofstream history("history.txt",ofstream::app);
 
 
-
-
-
     for (int i=0;i<master.fd_count;i++){
-
+        ostringstream ss;
         SOCKET outSock = master.fd_array[i];
         if (outSock!= listening && outSock!= sock){
             for (int k = 0; k < cnt_users_inf; k++)
             {
+
                 if (users_info[k].user_socket == to_string(sock))
                 {
-                    if (users_info[k].flag_user_name == 1)
-                        ss  << users_info[k].login << ": " << buf << "\r\n";
+                  //  cout <<" we are here";
+                    if (users_info[k].flag_user_name == 1) {
+                         ss  << users_info[k].login << ": " << buf << "\r\n";
+                    flag = users_info[k].login;
+                    }
                     else ss  << users_info[k].user_socket << ": " << buf << "\r\n";
+
+                    ss.flush();
                     break;
                 }
             }
@@ -155,26 +153,29 @@ void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]){
             }
 
             string strOut = ss.str();
-
-//                            if (strlen(buf)!=2 && buf!="\r\n") {
             if (sumk!=23) {
          //   cout << sumk <<"= sum" <<endl;
-                cout << time << " message from " << outSock << ": " << buf<<std::endl;
+                //cout << time << " message to " << strOut << ": " << buf<<std::endl;
                 send(outSock, strOut.c_str(), strOut.size() + 1, 0);
 
-                if (history.is_open()){
-                    if (buf[0]!='/') {
-                        history << sock << ": " << buf<<std::endl;
-                        history.flush();
-                    }
+                if (flag == "")  sendtofile =  to_string(sock) + ": "  + string(buf) + "\n";
+                else sendtofile = flag + ": "  + string(buf) + "\n";
 
+
+                if (history.is_open() && f==0){
+                    if (buf[0]!='/' && sendtofile!= to_string(sock) + ": \r\n" &&  sendtofile!= flag + ": \r\n") {
+                        history << sendtofile;
+                        history.flush();
+                        cout << sendtofile;
+                        f=1;
+                    }
                 }
 
            }
-
         }
-
     }
+
+
 
 }
 
@@ -240,6 +241,7 @@ int server()
         int socketCount = select(0, &copy, nullptr, nullptr, nullptr);
 
         for (int i=0;i<socketCount;i++){
+            ostringstream ss;
             int prop = 0;
             sock = copy.fd_array[i];
 
@@ -255,7 +257,7 @@ int server()
             {
                 users_info[cnt_users_inf].user_socket = to_string(sock);
                 cout<<cnt_users_inf<<"-----"<<users_info[cnt_users_inf].user_socket<<"\n";
-                cnt_users_inf++;
+                cnt_users_inf+=5;
             }
             if (sock == listening){
                 // принять соединение
@@ -265,7 +267,6 @@ int server()
                 // add the new connection to the list of connected clients
                 FD_SET(client, &master); // самая важная часть, добавить сокет в листенинг
                 cout <<"Новый сокет подключился!: " <<client <<'\n';
-
 
 
                 // welcome message
@@ -295,18 +296,18 @@ int server()
                 int bytesIn = recv(sock,buf,4096,0);
 
 
-                if (history_out.is_open()){
-                    int sumk=0;
-                    for (int i=0;i<4096;i++){
-                        sumk+=buf[i];
-                    }
-
-                    if (sumk!=23 && buf[0]!='/') {
-                        history_out << sock << ": " << buf<<std::endl;
-                        history_out.flush();
-                    }
-
-                }
+//                if (history_out.is_open()){
+//                    int sumk=0;
+//                    for (int i=0;i<4096;i++){
+//                        sumk+=buf[i];
+//                    }
+//
+//                    if (sumk!=23 && buf[0]!='/') {
+//                        history_out << sock << ": " << buf<<std::endl;
+//                        history_out.flush();
+//                    }
+//
+//                }
                 if (bytesIn <= 0){
                     //drop the client
                     closesocket(sock);

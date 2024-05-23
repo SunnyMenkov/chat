@@ -16,12 +16,16 @@
 #include <fstream>
 #include "globals.h"
 #include <windows.h>
+#include "server.h"
 
 
 //#include "ch.h"
 //#include "main.h"
 //#include "original.h"
 //#include <thread>
+
+ INFO users_info[1000];
+ all_logins data_inf[1000];
 
 // Data
 static ID3D11Device*            g_pd3dDevice = nullptr;
@@ -162,33 +166,25 @@ int maingui()
 //        }
 //        ImGui::End();
         static bool _scrollToBottom = false;
-
+        static bool _isMainHistory = true;
+        static int index = 0;
 
         {
             static float f = 0.0f;
-            static int counter = 0;
             ImGui::PushFont(font2);
             ImGui::Begin("Users",nullptr,ImGuiWindowFlags_NoResize);                          // Create a window called "Hello, world!" and append into it.
-            ImGui::Text("Choose user to send private message:");               // Display some text (you can use a format strings too)
+            ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0, 1.0f), "Choose user to send private message:");           // Display some text (you can use a format strings too)
+            static bool selection[100] = { false, false, false, false,false };
 
-
-            if (ImGui::TreeNode("Basic"))
-            {
-                static bool selection[100] = { false, false, false, false,false };
-
-
-                for (int i=0;i<master.fd_count;i++){
-                    string selectable = to_string(master.fd_array[i]);
-                    ImGui::Selectable(selectable.c_str(), &selection[i]);
+            for (int i=0;i<master.fd_count;i++){
+                string selectable = to_string(master.fd_array[i]);
+                ImGui::Selectable(selectable.c_str(), &selection[i],ImGuiSelectableFlags_AllowDoubleClick);
+                if (selectable[i]==1) {
+                    _isMainHistory = false;
+                    index = i;
                 }
-//                if (ImGui::Selectable("4. I am double clickable", selection[3], ImGuiSelectableFlags_AllowDoubleClick))
-//                    if (ImGui::IsMouseDoubleClicked(0))
-//                        selection[3] = !selection[3];
 
-                ImGui::TreePop();
             }
-
-
 
             ImGui::End();
             ImGui::PopFont();
@@ -200,9 +196,6 @@ int maingui()
         {
 
             static float f = 0.0f;
-            static int counter = 0;
-
-
             ImGui::PushFont(font2);
             ImGui::Begin("Send message");                          // Create a window called "Hello, world!" and append into it.
 
@@ -221,7 +214,8 @@ int maingui()
 
                 if (ImGui::Button("Login") && string(login).length()>0 && string(password).length()>0){
                     isLoginSuccess = user_login("", std::string(login), std::string(password),GUIsock);
-                  //  GUIsock = sock;
+
+                  GUIsock = sock;
                 }
                 ImGui::Text(isLoginSuccess.c_str());
                 ImGui::TreePop();
@@ -230,19 +224,24 @@ int maingui()
                              // Create a window called "Hello, world!" and append into it.
             if (ImGui::TreeNode("History")) {//ImGui::Text("История");               // Display some text (you can use a format strings too)
                 std::string prev_history = "";
+                // ??????? TODO
                 std::ifstream prev_out("history.txt", std::ifstream::app);
+                if (_isMainHistory) prev_out.open("history.txt", std::ifstream::app);
+                else  prev_out.open("history.txt", std::ifstream::app);
+
                 std::string line;
                 while (getline(prev_out, line)) {
                     //std::cout << "line:" << line << std::endl;
                     if (line != "\r\n" && line.length() > 0)
                         prev_history += '\n' + line;
                 }
+                ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + 600);
                 ImGui::Text(prev_history.c_str());
                 if (_scrollToBottom) {
-                    ImGui::SetScrollHereY(1.0f);
+                //    ImGui::SetScrollHereY(1.0f);
                     _scrollToBottom = false;
                 }
-
+                ImGui::PopTextWrapPos();
                 ImGui::TreePop();
             }
 
@@ -270,15 +269,12 @@ int maingui()
                 static char text_new[1024];
                 strcpy(text_new, text);
                 ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CtrlEnterForNewLine;
+                ImGui::SameLine();
                 ImGui::Text("Chat");
-
-
 
                 if (ImGui::InputText("##send", text, IM_ARRAYSIZE(text), ImGuiInputTextFlags_EnterReturnsTrue)) {
 //              ImGui::InputTextMultiline("##source", text, IM_ARRAYSIZE(text),
 //                                         ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 16));
-
-
                     if (text_new != text) {
                         // std::cout << text;
                         input << text;
@@ -287,12 +283,17 @@ int maingui()
 
                     // Интерфейс не будет отправлять сообщения, пока пользователь не войдёт в аккаунт.
                     // GUIsock присвоит ему свой уникальный сокет.
-                    if (GUIsock != 0) send_message(master, listening, GUIsock, text);
-                    else send_message(master, listening, master.fd_array[1], text);
+                    
+                    int send_master_index=1;
+                    for (int i=0;i<master.fd_count;i++){
+                       // if (master.fd_array[i]!=0) send_master_index = i;
+                    }
+
+                    send_message(master, listening, GUIsock, text);
+                   // else send_message(master, listening, master.fd_array[send_master_index], text);
                     _scrollToBottom = true;
                     cout <<"Текущие сокеты: ";
                     for (int i=0;i<master.fd_count;i++){
-
                         cout << master.fd_array[i]<<" ";
                     }
                     cout << endl;
@@ -300,14 +301,8 @@ int maingui()
                 }
 
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+//            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
             ImGui::Text("average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             ImGui::End();
             ImGui::PopFont();

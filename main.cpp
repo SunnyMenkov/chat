@@ -11,22 +11,16 @@ using namespace std;
 
 int main(){
 
-    thread t2(maingui);
-    thread t1(server);
-   client();
+    thread gui(maingui);
+    thread s(server);
     client();
-//    thread t7 (client);
+    client();
 
 
 
+    cout<<"Multithreading started"<<endl;
 
-
-    //  thread t4(client);
-
-
-    cout<<"Multithreading started";
-
-    t2.join();
+    gui.join();
 
     return 0;
 }

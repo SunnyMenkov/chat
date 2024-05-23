@@ -8,5 +8,4 @@ egor batyaev
 1 1
 2 2
 3 3
-t ttiov v
-baby gl
+magistr_yoda 2

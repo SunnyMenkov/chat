@@ -183,12 +183,7 @@ int maingui()
 
 
             ImGui::PushFont(font2);
-            ImGui::Begin("Chat history!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("История");               // Display some text (you can use a format strings too)
-
-
-
+            ImGui::Begin("Chat History");                          // Create a window called "Hello, world!" and append into it.
             std::ifstream prev_out("history.txt", std::ifstream::app);
             std::string line;
             string new_history;
@@ -217,13 +212,12 @@ int maingui()
         {
             static float f = 0.0f;
             ImGui::PushFont(font2);
-            ImGui::Begin("Users", nullptr,
-                         ImGuiWindowFlags_NoResize);                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("Users", nullptr,ImGuiWindowFlags_NoResize);                          // Create a window called "Hello, world!" and append into it.
             ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0, 1.0f),
                                "Choose user to send private message:");           // Display some text (you can use a format strings too)
             static bool selection[100] = {false, false, false, false, false};
 
-            for (int i = 0; i < master.fd_count; i++) {
+            for (int i = 0; i < cnt_users_inf; i++) {
                 string selectable = to_string(master.fd_array[i]) + " " + users_info[i].login;
 
                 if (i==0) selectable+=" server";
@@ -269,7 +263,7 @@ int maingui()
                     }
 
                     //  GUIsock = sock;
-                    for (int i = 0; i < master.fd_count; i++) {
+                    for (int i = 0; i < master.fd_count+6; i++) {
                         cout << users_info[i].login << " ? " << users_info[i].user_socket << endl;
                     }
                 }
@@ -315,9 +309,6 @@ int maingui()
                         users_info[2].password = std::string(password);
                     }
                     //  GUIsock2 = sock;
-                    for (int i=0;i<master.fd_count;i++){
-                        cout << users_info[i].login << " ? " << users_info[i].user_socket<<endl;
-                    }
                 }
                 ImGui::Text(isLoginSuccess2.c_str());
                 ImGui::TreePop();

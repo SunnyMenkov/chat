@@ -6,9 +6,8 @@
 
 
 fd_set master;
-SOCKET sock;
 SOCKET GUIsock;
 SOCKET GUIsock2;
 SOCKET listening;
-int cnt_users_inf=0, cnt_data_info=0;
+int cnt_users_inf=2, cnt_data_info=0;
 

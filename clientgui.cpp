@@ -162,41 +162,39 @@ int maingui()
 //        }
 //        ImGui::End();
         static bool _scrollToBottom = false;
+
+
         {
-
-
             static float f = 0.0f;
             static int counter = 0;
-
-
             ImGui::PushFont(font2);
-            ImGui::Begin("Chat history!");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("Users",nullptr,ImGuiWindowFlags_NoResize);                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Text("Choose user to send private message:");               // Display some text (you can use a format strings too)
 
-            ImGui::Text("История");               // Display some text (you can use a format strings too)
 
-
-            std::string prev_history="";
-            std::ifstream prev_out("history.txt", std::ifstream::app);
-
-            std::string line;
-            while(getline(prev_out, line))
+            if (ImGui::TreeNode("Basic"))
             {
-                //std::cout << "line:" << line << std::endl;
-                if (line!="\r\n"  && line.length()>0)
-                prev_history +='\n'+ line;
+                static bool selection[100] = { false, false, false, false,false };
 
+
+                for (int i=0;i<master.fd_count;i++){
+                    string selectable = to_string(master.fd_array[i]);
+                    ImGui::Selectable(selectable.c_str(), &selection[i]);
+                }
+//                if (ImGui::Selectable("4. I am double clickable", selection[3], ImGuiSelectableFlags_AllowDoubleClick))
+//                    if (ImGui::IsMouseDoubleClicked(0))
+//                        selection[3] = !selection[3];
+
+                ImGui::TreePop();
             }
-            ImGui::Text(prev_history.c_str());
-            if (_scrollToBottom) {
-                ImGui::SetScrollHereY(1.0f);
-                _scrollToBottom = false;
-            }
+
 
 
             ImGui::End();
             ImGui::PopFont();
 
         }
+
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
@@ -226,11 +224,28 @@ int maingui()
                   //  GUIsock = sock;
                 }
                 ImGui::Text(isLoginSuccess.c_str());
-
+                ImGui::TreePop();
+            }
+            //ImGui::T
+                             // Create a window called "Hello, world!" and append into it.
+            if (ImGui::TreeNode("History")) {//ImGui::Text("История");               // Display some text (you can use a format strings too)
+                std::string prev_history = "";
+                std::ifstream prev_out("history.txt", std::ifstream::app);
+                std::string line;
+                while (getline(prev_out, line)) {
+                    //std::cout << "line:" << line << std::endl;
+                    if (line != "\r\n" && line.length() > 0)
+                        prev_history += '\n' + line;
+                }
+                ImGui::Text(prev_history.c_str());
+                if (_scrollToBottom) {
+                    ImGui::SetScrollHereY(1.0f);
+                    _scrollToBottom = false;
+                }
 
                 ImGui::TreePop();
-
             }
+
 
 
 
@@ -255,9 +270,6 @@ int maingui()
                 static char text_new[1024];
                 strcpy(text_new, text);
                 ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CtrlEnterForNewLine;
-
-
-
                 ImGui::Text("Chat");
 
 
@@ -275,8 +287,15 @@ int maingui()
 
                     // Интерфейс не будет отправлять сообщения, пока пользователь не войдёт в аккаунт.
                     // GUIsock присвоит ему свой уникальный сокет.
-                    send_message(master, listening, master.fd_array[1], text);
+                    if (GUIsock != 0) send_message(master, listening, GUIsock, text);
+                    else send_message(master, listening, master.fd_array[1], text);
                     _scrollToBottom = true;
+                    cout <<"Текущие сокеты: ";
+                    for (int i=0;i<master.fd_count;i++){
+
+                        cout << master.fd_array[i]<<" ";
+                    }
+                    cout << endl;
                   //  std::cout << text  << " message sent from " << sock <<" to "<< listening << std::endl;
                 }
 

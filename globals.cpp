@@ -7,6 +7,6 @@
 
 fd_set master;
 SOCKET sock;
-SOCKET GUIsock;
+SOCKET GUIsock=0;
 SOCKET listening;
 

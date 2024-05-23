@@ -125,13 +125,7 @@ void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]){
     time_t now = time(0);
     char* time = asctime(localtime(&now));
     time[strlen(time) - 1] = '\0';
-
-
     ofstream history("history.txt",ofstream::app);
-
-
-
-
 
     for (int i=0;i<master.fd_count;i++){
 
@@ -164,6 +158,10 @@ void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]){
 
                 if (history.is_open()){
                     if (buf[0]!='/') {
+
+
+
+
                         history << sock << ": " << buf<<std::endl;
                         history.flush();
                     }

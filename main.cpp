@@ -19,6 +19,8 @@ int main(){
 
 
     cout<<"Multithreading started"<<endl;
+    cnt_users_inf=master.fd_count;
+    cout<<"clients: "<<master.fd_count<<endl;
 
     gui.join();
 

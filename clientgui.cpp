@@ -18,8 +18,6 @@
 #include <windows.h>
 #include "server.h"
 
-INFO users_info[1000];
-all_logins data_inf[1000];
 
 // Data
 static ID3D11Device*            g_pd3dDevice = nullptr;
@@ -150,8 +148,8 @@ int maingui()
 
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+//        if (show_demo_window)
+//            ImGui::ShowDemoWindow(&show_demo_window);
 
         static bool _scrollToBottom = false;
         static string private_message_recepient = "";
@@ -306,6 +304,7 @@ int maingui()
                 else send_message(master, listening, master.fd_array[1], text);
 
             }
+            ImGui::ColorEdit3("clear color", (float*)&clear_color);
             ImGui::End();
             ImGui::PopFont();
         }

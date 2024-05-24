@@ -1,11 +1,12 @@
 empty (should be empty)
-lol 128
-sss 222
-sobaka 222
-baby gleb
+lol 1
+sss 1
+sobaka 1
+baby 1
 sasha menkov
 egor batyaev
 1 1
 2 2
 3 3
 magistr_yoda 2
+rozenberg 1

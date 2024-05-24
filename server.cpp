@@ -179,7 +179,86 @@ void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]){
 
 }
 
+void pr_mesg(string cmd,SOCKET sock)
+{
+    int cnt_bfm = 9, user_flag = 0;
+    while (cmd[cnt_bfm] !=' ')
+    {
+        cnt_bfm++;
+    }
+    string recepient = cmd.substr(9, cnt_bfm - 9); // recepient
+    cout<<"Кол-во юзеров: "<<cnt_users_inf<<"\n";
+    for (int j = 0; j < cnt_users_inf; j++)
+    {
+      
+        if ((users_info[j].login == recepient) || (users_info[j].user_socket == recepient))
+        {
 
+            user_flag = 1;
+            string text_message;
+            for (int k = 0; k < cnt_users_inf; k++)
+            {
+                cout << users_info[k].user_socket << "USER SOCKET "<<endl;
+                if (users_info[k].user_socket == to_string(sock)) //sender
+                {
+                    cout<< users_info[k].user_socket <<" отправил приватное смс "<<recepient<<"\n";
+                    string firstuser,seconduser;
+
+                    if (users_info[k].login!="")
+                        firstuser = users_info[k].login;
+                    else
+                        firstuser = users_info[k].user_socket;
+
+                    if (users_info[j].login!="")
+                        seconduser = users_info[j].login;
+                    else
+                        seconduser = users_info[j].user_socket;
+
+                    string arr[] = {firstuser,seconduser };
+                    sort(arr, arr + 2);
+
+
+                    ofstream private_history_out("private_history/"+arr[0]+" "+arr[1]+".txt",ofstream::app);
+                    ifstream private_history_read("private_history/"+arr[0]+" "+arr[1]+".txt");
+
+                    if (users_info[k].flag_user_name == 1)
+                    {text_message =users_info[k].login+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);}
+                    else{
+                        text_message = users_info[k].user_socket+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
+                    }
+                    private_history_out<<text_message<<std::endl;
+
+
+
+                    text_message = "private from "+text_message+"\r\n";
+
+                    send(stoi(users_info[j].user_socket), text_message.c_str(), text_message.size()+1, 0);
+
+                    string line,prev_private_history;
+                    while(getline(private_history_read, line))
+                    {
+                        //std::cout << "line:" << line << std::endl;
+                        prev_private_history +='\n'+ line;
+                    }
+
+                    send(stoi(users_info[k].user_socket), prev_private_history.c_str(),prev_private_history.size()+1,0);
+
+                    break;
+                }
+            }
+//                                    if (users_info[j].flag_user_name == 1) text_message = "private from " + users_info[j].login+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
+//                                    else text_message = "private from " + users_info[j].user_socket+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
+//                                    send(stoi(users_info[j].user_socket), text_message.c_str(), text_message.size()+1, 0);
+            //break;
+        }
+    }
+
+    if (user_flag == 0)
+    {
+        string message = "Пользователя с данным никнеймом не существует.\r\n";
+        send(sock, message.c_str(),message.size()+1,0);
+    }
+}
 
 int server()
 {
@@ -323,87 +402,7 @@ int server()
 //                        {
 //                          users[sock] = cmd.substr(6,cmd.length()-6);
 //                        }
-                        if (cmd.substr(0,8) == "/pr_mesg")
-                        {
-                            int cnt_bfm = 9, user_flag = 0;
-                            while (cmd[cnt_bfm] !=' ')
-                            {
-                                cnt_bfm++;
-                            }
-                            string user_name = cmd.substr(9, cnt_bfm - 9);
-                            cout<<"Кол-во юзеров: "<<cnt_users_inf<<"\n";
-                            for (int j = 0; j < cnt_users_inf; j++)
-                            {
-                                cout<<users_info[j].user_socket<<"отправил приватное смс "<<user_name<<" "<<(users_info[j].user_socket == user_name)<<"\n";
-                                if ((users_info[j].login == user_name) || (users_info[j].user_socket == user_name))
-                                {
-                                    user_flag = 1;
-                                    string text_message;
-                                    for (int k = 0; k < cnt_users_inf; k++)
-                                    {
-                                        if (users_info[k].user_socket == to_string(sock))
-                                        {
-                                            string firstuser,seconduser;
-
-                                            if (users_info[k].login!="")
-                                                firstuser = users_info[k].login;
-                                            else
-                                                firstuser = users_info[k].user_socket;
-
-                                            if (users_info[j].login!="")
-                                                seconduser = users_info[j].login;
-                                            else
-                                                seconduser = users_info[j].user_socket;
-
-                                            string arr[] = {firstuser,seconduser };
-
-
-                                            sort(arr, arr + 2);
-
-
-                                            ofstream private_history_out("private_history/"+arr[0]+" "+arr[1]+".txt",ofstream::app);
-                                            ifstream private_history_read("private_history/"+arr[0]+" "+arr[1]+".txt");
-
-                                            if (users_info[k].flag_user_name == 1)
-                                            {text_message =users_info[k].login+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);}
-                                            else{
-                                                text_message = users_info[k].user_socket+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
-                                            }
-                                            private_history_out<<text_message<<std::endl;
-
-
-
-                                            text_message = "private from "+text_message;
-
-                                            send(stoi(users_info[j].user_socket), text_message.c_str(), text_message.size()+1, 0);
-
-                                            string line,prev_private_history;
-                                            while(getline(private_history_read, line))
-                                            {
-                                                //std::cout << "line:" << line << std::endl;
-                                                prev_private_history +='\n'+ line;
-                                            }
-
-                                            send(stoi(users_info[k].user_socket), prev_private_history.c_str(),prev_private_history.size()+1,0);
-
-
-
-                                            break;
-                                        }
-                                    }
-//                                    if (users_info[j].flag_user_name == 1) text_message = "private from " + users_info[j].login+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
-//                                    else text_message = "private from " + users_info[j].user_socket+": "+cmd.substr(cnt_bfm+1, cmd.length()-cnt_bfm);
-//                                    send(stoi(users_info[j].user_socket), text_message.c_str(), text_message.size()+1, 0);
-                                    //break;
-                                }
-                            }
-
-                            if (user_flag == 0)
-                            {
-                                string message = "Пользователя с данным никнеймом не существует.\r\n";
-                                send(sock, message.c_str(),message.size()+1,0);
-                            }
-                        }
+                        if (cmd.substr(0,8) == "/pr_mesg") pr_mesg(cmd,sock);
                         if (cmd.substr(0,8) == "/command")
                         {
                             string message = "\r\nСписок комманд:\r\n"

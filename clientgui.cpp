@@ -153,47 +153,24 @@ int maingui()
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
 
-
-//        static bool _scrollToBottom = false;
-//        static ImGuiTextBuffer _textBuffer;
-//        static int _number = 0;
-//
-//        ImGui::Begin("Test control", nullptr, ImGuiWindowFlags_NoSavedSettings);
-//        if (ImGui::Button("Add line")) {
-//            _textBuffer.appendf("Number: %d\n", ++_number);
-//            _scrollToBottom = true;
-//        }
-//        ImGui::End();
-//
-//        ImGui::Begin("Test", nullptr, ImGuiWindowFlags_NoSavedSettings);
-//        ImGui::TextUnformatted(_textBuffer.begin());
-//        ImGui::SetScrollHereY(1.0f);
-//        if (_scrollToBottom) {
-//            ImGui::SetScrollHereY(1.0f);
-//            _scrollToBottom = false;
-//        }
-//        ImGui::End();
         static bool _scrollToBottom = false;
-
+        static string private_message_recepient = "";
+        static string senderlogin = "";
 
         {
-
-            static float f = 0.0f;
-            static int counter = 0;
-
-
             ImGui::PushFont(font2);
             ImGui::Begin("Chat History");                          // Create a window called "Hello, world!" and append into it.
             std::ifstream prev_out("history.txt", std::ifstream::app);
+
             std::string line;
             string new_history;
-
             while(getline(prev_out, line))
             {
                 //std::cout << "line:" << line << std::endl;
                 if (line!="\r\n"  && line.length()>0)
                     new_history +='\n'+ line;
             }
+
             if (new_history!= prev_history) {_scrollToBottom = true; prev_history=new_history;}
 
             ImGui::Text(new_history.c_str());
@@ -201,8 +178,6 @@ int maingui()
                 ImGui::SetScrollHereY(1.0f);
                 _scrollToBottom = false;
             }
-
-
             ImGui::End();
             ImGui::PopFont();
 
@@ -211,30 +186,72 @@ int maingui()
 
         {
             static float f = 0.0f;
+
+
             ImGui::PushFont(font2);
             ImGui::Begin("Users", nullptr,ImGuiWindowFlags_NoResize);                          // Create a window called "Hello, world!" and append into it.
             ImGui::TextColored(ImVec4(0.0f, 0.5f, 0.0, 1.0f),
                                "Choose user to send private message:");           // Display some text (you can use a format strings too)
             static bool selection[100] = {false, false, false, false, false};
 
+            int iSelected = 1;
             for (int i = 0; i < cnt_users_inf; i++) {
                 string selectable = to_string(master.fd_array[i]) + " " + users_info[i].login;
-
+                senderlogin = users_info[1].login; // отправитель приватных смсок
                 if (i==0) selectable+=" server";
                 else if (GUIsock==0) GUIsock=master.fd_array[i];
                 else if (GUIsock2==0 && master.fd_array[i]!=GUIsock) GUIsock2=master.fd_array[i];
 
      //cout << GUIsock2 << " guiscokets "  << GUIsock<<endl;
                 ImGui::Selectable(selectable.c_str(), &selection[i], ImGuiSelectableFlags_AllowDoubleClick);
-                if (selectable[i] == 1) {
-//                    _isMainHistory = false;
-//                    index = i;
+                if (selection[i] == 1) {
+                    private_message_recepient=selectable;
+                    iSelected = 0;
                 }
+                if (selection[i] == 0 && iSelected == 1 )    private_message_recepient="";
 
             }
-
+        //   cout<<private_message_recepient;
             ImGui::End();
             ImGui::PopFont();
+        }
+
+
+        if (private_message_recepient!=""){
+            ImGui::PushFont(font2);
+
+            int spacePos = private_message_recepient.find(" ");
+            int prmesgLen = private_message_recepient.length();
+            if (prmesgLen-1 == spacePos) private_message_recepient.pop_back();
+            else private_message_recepient=private_message_recepient.substr(spacePos+1,prmesgLen-1);
+
+            if (senderlogin == "") senderlogin = to_string(master.fd_array[1]);
+
+            string arr[] = {senderlogin,private_message_recepient}; // сортировка файлов с приватной историей
+            sort(arr, arr + 2);
+
+
+            std::ifstream prev_out("private_history/"+arr[0]+" "+arr[1]+".txt", std::ifstream::app);
+
+            std::string line;
+            string private_history;
+            while(getline(prev_out, line))
+            {
+                //std::cout << "line:" << line << std::endl;
+                if (line!="\r\n"  && line.length()>0)
+                    private_history +='\n'+ line;
+            }
+
+            string name ="Private:"+ senderlogin+" - "+private_message_recepient;
+            ImGui::Begin(name.c_str());                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Text(private_history.c_str());
+            if (_scrollToBottom) {
+                ImGui::SetScrollHereY(1.0f);
+                _scrollToBottom = false;
+            }
+            ImGui::End();
+            ImGui::PopFont();
+
         }
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
@@ -279,8 +296,15 @@ int maingui()
             ImGui::Text("Chat");
             if (ImGui::InputText("##send", text, IM_ARRAYSIZE(text), ImGuiInputTextFlags_EnterReturnsTrue)) {
                 users_info[1].user_socket = to_string(master.fd_array[1]);
-                send_message(master, listening, master.fd_array[1], text);
+
                 _scrollToBottom = true;
+                if (private_message_recepient!="")  {
+                    cout << private_message_recepient<<endl;
+                    pr_mesg("/pr_mesg "+private_message_recepient+" "+text,master.fd_array[1]);
+
+                }
+                else send_message(master, listening, master.fd_array[1], text);
+
             }
             ImGui::End();
             ImGui::PopFont();

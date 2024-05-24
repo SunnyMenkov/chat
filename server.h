@@ -6,11 +6,13 @@
 using namespace std;
 #ifndef CHAT_SERVER_H
 #define CHAT_SERVER_H
+
 struct all_logins
 {
     string login, password;
 };
 //Структура информации каждого сокета
+
 struct INFO
 {
     string login, password, user_socket;
@@ -20,6 +22,8 @@ struct INFO
 //
 
 int server();
-void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]);
 string user_login(string cmd, string login, string password,SOCKET sock);
+void send_message(fd_set master,SOCKET listening,SOCKET sock,char buf[]);
+void pr_mesg(string cmd, SOCKET sock);
+
 #endif //CHAT_SERVER_H

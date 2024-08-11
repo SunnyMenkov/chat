@@ -4,9 +4,9 @@
 
 Features:
 - registration and login
-- direct messages
+- direct messages (DM)
 - history
 - current online
+- client/server
 
-TODO:
-RSA
+HSE Student Project made by Menkov Alexander and Egor Batyaev.
